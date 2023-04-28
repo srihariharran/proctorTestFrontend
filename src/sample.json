@@ -1,0 +1,28 @@
+[
+    {
+        "question": "Which of the following HTML Elements is used for making any text bold ?",
+        "option1": "b",
+        "option2": "p",
+        "option3": "h",
+        "option4": "d",
+        "option5": "li",
+        "correct_answer": "b"
+    },
+    {
+        "question": "Which of the following HTML element is used for creating an unordered list?",
+        "option1": "ol",
+        "option2": "ul",
+        "option3": "em",
+        "option4": "li",
+        "correct_answer": "ul"
+    },
+    {
+        "question": "How many heading tags are there in HTML5?",
+        "option1": "6",
+        "option2": "10",
+        "option3": "8",
+        "option4": "2",
+        "option5": "5",
+        "correct_answer": "6"
+    }
+]

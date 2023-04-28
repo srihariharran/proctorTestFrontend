@@ -1,0 +1,74 @@
+/* css for login page*/
+.login-box-container
+{
+    background-image: url("../images/loginPagePlain.jpg");  
+    min-height: 100vh;                                      
+    background-position: center;                           
+    background-repeat: no-repeat;                           
+    background-size: cover;                                 
+    position: relative;
+}
+.modal-style
+{
+    position: 'absolute';
+    top: '50%';
+    left: '50%';
+    width: 400;
+    transform: 'translate(-50%, -50%)';
+    border: '2px solid #000';
+    box-shadow: 24;
+}
+.text-center
+{
+    text-align: center;
+}
+.text-right
+{
+    text-align: right;
+}
+.border-main
+{
+    border: 1px solid #0e2740  !important;
+}
+.border-right-main
+{
+    border-right: 1px solid #0e2740  !important;
+}
+.border-left-main
+{
+    border-left: 1px solid #0e2740  !important;
+}
+.small-btn-font
+{
+    font-size: 8px !important;
+    /* padding: 0 !important; */
+}
+.outline-main
+{
+    outline: 1px solid #0e2740  !important;
+}
+.text-main
+{
+    color: #0e2740 !important;
+}
+.bg-main
+{
+    background: #0e2740 !important;
+}
+.border-color-main
+{
+    border-color: #0e2740  !important;
+}
+.text-white
+{
+    color: #ffffff;
+}
+.text-bold
+{
+    font-weight: bold;
+}
+.box
+{
+    box-shadow:0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    background-color: white;
+}
