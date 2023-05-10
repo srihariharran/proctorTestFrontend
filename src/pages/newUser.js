@@ -1,13 +1,16 @@
 // Importing Required Packages
 import * as React from 'react';
+import { useState } from 'react';
 import './static/css/style.css'
 import 'bootstrap/dist/css/bootstrap.min.css';  
 import Logo from './static/images/logo-full.png'
 import { useNavigate } from "react-router-dom";
-import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Alert from '@mui/material/Alert';
+import { useEffect } from 'react';
 
 // New User Page Function
 function NewUserPage()
@@ -16,10 +19,151 @@ function NewUserPage()
     const handleRoutes = (path) => {
         navigate(path, { replace: true })
     }
-    const submitNewUserFormData = async() => {
-        handleRoutes("/")
+    const [form_data,setForm_data] = useState({})
+    // Function to update user details
+    const updateFormData = (event) => {
+        const {name,value} = event.target
+        setForm_data((form_data) => ({ ...form_data, [name]: value }))
     }
-
+    const [btnLoad,setBtnLoad] = useState(false)
+    const [alertState,setAlertState] = useState({
+        state:false,
+        type:"",
+        message:""
+    })
+    // Function to register user
+    const submitNewUserFormData = async(event) => {
+        event.preventDefault()
+        if(!username_state.state && !mobile_state.state && !passwordState.state)
+        {
+            setBtnLoad(true)
+            try 
+            {
+                let res = await fetch("/api/register/user",
+                {
+                    crossDomain: true,
+                    headers: { 'Content-Type': 'application/json' },
+                    method: "POST",
+                    body: JSON.stringify(form_data)
+                });
+                let resJson = await res.json();
+                if (res.status === 200) {
+                    document.getElementById("userRegisterForm").reset();
+                    setBtnLoad(false)
+                    if(resJson['status'])
+                    {
+                        setAlertState((alert)=>({...alert,["type"]:"success"}))
+                    }
+                    else
+                    {
+                        setAlertState((alert)=>({...alert,["type"]:"error"}))
+                    }
+                    setAlertState({
+                        state:true,
+                        message:resJson["message"]
+                    })
+                    
+                    setTimeout(()=>{
+                        setAlertState({
+                            state:false,
+                            type:"",
+                            message:""
+                        })
+                    },5000)
+                }
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    }
+    const [username_state, setUsername_state] = useState({ text: '', state: false })
+    const [mobile_state, setMobile_state] = useState({ text: '', state: false })
+    // Function to check username exists
+    const checkUsername = async(event) => {
+        event.preventDefault()
+        // API Call to Check Username
+        try 
+        {
+          let res = await fetch("/api/checkUsernameExists",
+            {
+              crossDomain: true,
+              headers: { 'Content-Type': 'application/json' },
+              method: "POST",
+              body: JSON.stringify({
+                username: event.target.value
+              })
+            });
+          let resJson = await res.json();
+          if (res.status === 200) {
+            if(!resJson.status)
+            {
+              setUsername_state({ text: 'Username Exists', state: true })
+            }
+            else
+            {
+              setUsername_state({ text: '', state: false })
+            }
+          }
+        }
+        catch (err) {
+          console.log(err);
+        }
+    }
+    
+    // Function to Check Mobile
+    const checkMobile = async(event) => {
+        event.preventDefault()
+        
+        // API Call to Check Mobile
+        try 
+        {
+          let res = await fetch("/api/checkMobileNoExists",
+            {
+              crossDomain: true,
+              headers: { 'Content-Type': 'application/json' },
+              method: "POST",
+              body: JSON.stringify({
+                mobile: event.target.value
+              })
+            });
+          let resJson = await res.json();
+          if (res.status === 200) 
+          {
+            if(!resJson.status)
+            {
+            setMobile_state({ text: 'Mobile No Exists', state: true })
+            }
+            else
+            {
+            setMobile_state({ text: '', state: false })
+            }
+          }
+        }
+        catch (err) {
+          console.log(err);
+        }
+    }
+    const [passwordState,setPasswordState] = useState({
+        state:false,
+        text:''
+    })
+    useEffect(()=>{
+        if(form_data.password!=form_data.confirm_password)
+        {
+            setPasswordState({
+                state:true,
+                text:"Password not same"
+            })
+        }
+        else
+        {
+            setPasswordState({
+                state:false,
+                text:""
+            })
+        }
+    },[form_data])
     return(
         <div>
             {/* NewUser Box */}
@@ -42,40 +186,47 @@ function NewUserPage()
                                             <strong>User Registration</strong>
                                         </h4>
                                         <br/>
-                                        <form autoComplete='off' onSubmit={submitNewUserFormData}>
+                                        <form id="userRegisterForm" autoComplete='off' onSubmit={submitNewUserFormData}>
                                             <div>
-                                                <TextField variant='outlined' label="Email" type="email" name="username" size="small" fullWidth/>  
+                                                <TextField error={username_state.state} helperText={username_state.text} onChange={updateFormData} onInput={checkUsername} variant='outlined' label="Email" type="email" name="username" size="small" required fullWidth/>  
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField variant='outlined' label="Name" type="email" name="name" size="small" fullWidth/>  
+                                                <TextField onChange={updateFormData} variant='outlined' label="Name" type="text" name="name" size="small" required fullWidth/>  
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField variant='outlined' label="Password" type="password" name="password" size="small" fullWidth/> 
+                                                <TextField error={passwordState.state}  onChange={updateFormData} variant='outlined' label="Password" type="password" name="password" size="small" required fullWidth/> 
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField variant='outlined' label="Confirm Password" type="password" name="confirm_password" size="small" fullWidth/> 
+                                                <TextField error={passwordState.state} helperText={passwordState.text} onChange={updateFormData} variant='outlined' label="Confirm Password" type="password" name="confirm_password" size="small" required fullWidth/>   
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField variant='outlined' label="School/College/Company" type="text" name="organisation" size="small" fullWidth/>  
+                                                <TextField onChange={updateFormData} variant='outlined' label="School/College/Company" type="text" name="organisation" size="small" required fullWidth/>  
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField variant='outlined' label="Designation" type="text" name="designation" size="small" fullWidth/>  
+                                                <TextField onChange={updateFormData} variant='outlined' label="Designation" type="text" name="designation" size="small" required fullWidth/>  
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField variant='outlined' label="Mobile" type="text" name="mobile" size="small" fullWidth/>  
+                                                <TextField error={mobile_state.state} helperText={mobile_state.text} onChange={updateFormData} onInput={checkMobile} variant='outlined' label="Mobile" type="text" name="mobile" size="small" required fullWidth/>  
                                             </div>
                                             <br/>
                                             
                                             <Stack direction="row" justifyContent="space-between">
                                                 <Button className="text-main" type='button' onClick={()=>handleRoutes("/")}>Login</Button>
-                                                <Button className="bg-main text-white" variant="contained" onClick={submitNewUserFormData}>Register</Button>
+                                                {
+                                                    (alertState.state)&&
+                                                    <Alert severity={alertState.type}>{alertState.message}</Alert>
+                                                }
+                                                
+                                                <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Register</span></LoadingButton>
+
                                             </Stack>
+                                            
                                         </form>
                                     </div>
                                 </div>

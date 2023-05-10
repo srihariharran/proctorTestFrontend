@@ -23,6 +23,9 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Alert from '@mui/material/Alert';
+import { decryptData } from './functions/crypto';
 
 
 // Add Course Form Page Function
@@ -35,15 +38,13 @@ function AddCourseForm()
         {
             courseName:'',
             mode:'public',
-            startDate:'',
+            noOfQuestion:'',
             startTime:'',
-            endDate:'',
             endTime:'',
             duration:'',
             tabSwitch:'',
             webcam:'',
-            webcamLimit:'',
-            cookie:''
+            webcamLimit:''
         }
     );
     // Function to update the form data
@@ -54,22 +55,68 @@ function AddCourseForm()
     const updateStartTimeData = (value) => {
         // const { name } = event.target;
         console.log(new Date(value).toISOString());
-        setForm_data((form_data) => ({ ...form_data, ["startTime"]: value }))
+        setForm_data((form_data) => ({ ...form_data, ["startTime"]: value.toISOString() }))
     }
     const updateEndTimeData = (value) => {
         // const { name } = event.target;
         console.log(new Date(value));
-        setForm_data((form_data) => ({ ...form_data, ["endTime"]: value }))
+        setForm_data((form_data) => ({ ...form_data, ["endTime"]: value.toISOString() }))
     }
+    const [btnLoad,setBtnLoad] = useState(false)
+    const [alertState,setAlertState] = useState({
+        state:false,
+        type:"",
+        message:""
+    })
     // Function to submit form data
     const submitData = async(event) => {
         event.preventDefault()
         console.log(form_data);
+        try 
+        {
+            let res = await fetch("/api/course/addDetails",
+            {
+                crossDomain: true,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+decryptData(localStorage.getItem("utils"))["token"],
+                },
+                method: "POST",
+                body: JSON.stringify(form_data),
+            });
+            let resJson = await res.json();
+            if (res.status === 200) {
+                setAlertState({
+                    state:true,
+                    message:resJson["message"]
+                })
+                if(resJson['status'])
+                {
+                    setAlertState((alert)=>({...alert,["type"]:"success"}))
+                }
+                else
+                {
+                    document.getElementById("form").reset();
+                    setBtnLoad(false)
+                    setAlertState((alert)=>({...alert,["type"]:"error"}))
+                }
+                setTimeout(()=>{
+                    setAlertState({
+                        state:false,
+                        type:"",
+                        message:""
+                    })
+                },5000)
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
     
     return(
         <div>
-            <form autoComplete="off" onSubmit={submitData}>
+            <form autoComplete="off" id="form" onSubmit={submitData}>
 
                 {/* Start of Question Details Form */}
                 <div>
@@ -135,6 +182,18 @@ function AddCourseForm()
                                     <br/>
                                     <Stack direction="row" >
                                         <TextField
+                                            id="question"
+                                            label="No. of Questions"
+                                            name="noOfQuestion"
+                                            size="small"
+                                            sx={{ width: '100%' }}
+                                            onChange={updateFormData}
+                                            required
+                                        />
+                                    </Stack>
+                                    <br/>
+                                    <Stack direction="row" >
+                                        <TextField
                                             id="duration"
                                             label="Course Duration"
                                             name="duration"
@@ -168,8 +227,8 @@ function AddCourseForm()
                                                 
                                                 onChange={updateFormData}
                                             >
-                                                <MenuItem value="public">Public</MenuItem>
-                                                <MenuItem value="private">Private</MenuItem>
+                                                <MenuItem value="yes">Yes</MenuItem>
+                                                <MenuItem value="no">No</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Stack>
@@ -196,9 +255,13 @@ function AddCourseForm()
                     
                     <br />
                     <div style={{ textAlign: 'right', marginRight: '1%' }}>
-                        <Button variant="contained" type="submit" color="success" endIcon={<AddCircleOutlineIcon />}>
-                        Submit
-                        </Button>
+                    {
+                        (alertState.state)&&
+                        <Alert severity={alertState.type}>{alertState.message}</Alert>
+                    }
+                    
+                    <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Add</span></LoadingButton>
+                        
                     </div>
                 </div>
                     

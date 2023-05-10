@@ -21,6 +21,7 @@ import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Logo from '../static/images/logo-full.png'
+import { decryptData } from '../functions/crypto';
 
 const drawerWidth = 240;
 const navItems = ["courses","contribute","settings"];
@@ -52,7 +53,36 @@ function Navbar()
     const handleDrawerToggle = () => {
         setMobileOpen((prevState) => !prevState);
     };
-
+    const logout = async() => {
+        try{
+            let res = await fetch('/api/logout',
+            {
+                crossDomain: true,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+decryptData(localStorage.getItem("utils"))["token"],
+                },
+                method: "POST",
+                
+            });
+            let resJson = await res.json();
+            if (res.status === 200) {
+                if(resJson["status"])
+                {
+                    localStorage.clear()
+                    handleRoutes('/')
+                }
+                else
+                {
+                    console.log(resJson)
+                }
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
+        
+    }
     const drawer = (
         <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
             <Typography variant="h6" sx={{ my: 2 }}>
@@ -133,7 +163,7 @@ function Navbar()
                                 }}
                             >
                                 <MenuItem >Profile</MenuItem>
-                                <MenuItem onClick={()=>handleRoutes('/')}>Logout</MenuItem>
+                                <MenuItem onClick={logout}>Logout</MenuItem>
                             </Menu>
                         </Button>
                         

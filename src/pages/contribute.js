@@ -20,7 +20,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import AddCourseForm from './addCourseForm';
 import CourseImg from './static/images/course.jpg';
-
+import { decryptData } from './functions/crypto';
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -57,106 +57,149 @@ function ContributePage()
     }
     const closeAddCourseModal = () => {
         setAddCourseModalState(false);
+        getCourseDetails()
     }
     // State variable for Course Details
     const [courseDetails,setCourseDetails] = useState([
         {
-            title:"HTML",
-            question:30,
-            visible:"Public",
-            createdBy:"Hari"
-        },
-        {
-            title:"CSS",
-            question:50,
-            visible:"Public",
-            createdBy:"Hari"
-        }
-        ,
-        {
-            title:"Javascript",
-            question:30,
-            visible:"Public",
-            createdBy:"Hari"
-        },
-        {
-            title:"Python",
-            question:40,
-            visible:"Public",
-            createdBy:"Hari"
+            
         }
     ]);
 
+
+    const [loginStatus,setLoginStatus] = useState(false)
+    useEffect(()=>{
+        (async () => {
+            // Checking Login Status
+            if(localStorage.getItem("utils"))
+            {
+                getCourseDetails()
+            }
+            else
+            {
+                setLoginStatus(false)
+                localStorage.clear()
+                handleRoutes("/",{ replace: true })
+            }
+        })();
+        
+        
+    },[])
+
+
+    const getCourseDetails = async() => {
+        try 
+        {
+            let res = await fetch("/api/course/getDetails",
+            {
+                crossDomain: true,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+decryptData(localStorage.getItem("utils"))["token"],
+                },
+                method: "POST"
+            });
+            let resJson = await res.json();
+            if (res.status === 200) {
+                setCourseDetails(resJson)
+                setLoginStatus(true)
+                console.log(resJson)
+            }
+            else
+            {
+                localStorage.clear()
+                handleRoutes("/",{ replace: true })
+            }
+        }
+        catch (err) {
+            console.log(err);
+            localStorage.clear()
+            handleRoutes("/",{ replace: true })
+        }
+    }
+
     return(
         <div>
-            {/* Courses List */}
-            <Grid container spacing={2}>
-                <Grid item xs={12}>
-                    <Navbar />
-                </Grid>
-                <Grid item xs={12}>
-                    <Container maxWidth="lg">
-                        <Stack direction="row" justifyContent="space-between">
-                            <h2 className='text-main'>Contribute</h2>
-                            <Button variant='contained' size="small" onClick={openAddCourseModal} className="bg-main text-white text-bold" sx={{margin:"5px"}}>Create Course</Button>
-                        </Stack>
-                        
-                        <Divider />
-                        <br/>
-                        <Grid container spacing={2}>
-                        {
-                            courseDetails.map(data=> (
-                                <Grid item xs={12} sm={4}>
-                                    <Card sx={{ maxWidth: "100%"}} elevation={3}>
-                                        <CardMedia
-                                            sx={{ height: 140 }}
-                                            image={CourseImg}
-                                            title={data.title}
-                                        />
-                                        <CardContent>
-                                            <Stack direction={"row"}>
-                                                <Typography gutterBottom variant="h5" component="div">
-                                                {data.title}
-                                                </Typography>
-                                                &nbsp;
-                                                -
-                                                &nbsp;
-                                                <Chip label={data.visible} variant="outlined" size="small" sx={{marginTop:"4px"}} />
-                                            </Stack>
-
-                                            <Typography variant="body2" color="text.secondary">
-                                               {data.question} questions
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                               Created by {data.createdBy}
-                                            </Typography>                                            
-                                            <Stack direction="row" justifyContent="right">
-                                                <Button variant="outlined" size="small" className='text-main border-main' onClick={()=>handleRoutes("/contribute/questions",{state:{title:data.title}})}>View</Button>
-                                            </Stack>
-                                        </CardContent>
-                                            
-                                    </Card>
-                                </Grid>
-                                
-                            ))
-                        }
+            {
+                (loginStatus) &&
+                <div>
+                    {/* Courses List */}
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            <Navbar />
                         </Grid>
-                    </Container>
-                </Grid>
-            </Grid>
-            <br/>
-            <Modal
-                open={addCourseModalState}
-                onClose={closeAddCourseModal}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-            >
-                <Box sx={modalStyle}>
-                    <AddCourseForm />
+                        <Grid item xs={12}>
+                            <Container maxWidth="lg">
+                                <Stack direction="row" justifyContent="space-between">
+                                    <h2 className='text-main'>Contribute</h2>
+                                    <Button variant='contained' size="small" onClick={openAddCourseModal} className="bg-main text-white text-bold" sx={{margin:"5px"}}>Add Course</Button>
+                                </Stack>
+                                
+                                <Divider />
+                                <br/>
+                                <Grid container spacing={2}>
+                                {
+                                    (courseDetails.length==0)?
+                                        <Container className='text-center'>Courses not available</Container>
+                                    :
+                                    courseDetails.map(data=> (
+                                        <Grid item xs={12} sm={4}>
+                                            <Card sx={{ maxWidth: "100%"}} elevation={3}>
+                                                <CardMedia
+                                                    sx={{ height: 140 }}
+                                                    image={CourseImg}
+                                                    title={data.courseName}
+                                                />
+                                                <CardContent>
+                                                    <Stack direction={"row"}>
+                                                        <Typography gutterBottom variant="h5" component="div">
+                                                        {data.courseName}
+                                                        </Typography>
+                                                        &nbsp;
+                                                        -
+                                                        &nbsp;
+                                                        <Chip label={data.mode} variant="outlined" size="small" sx={{marginTop:"4px"}} />
+                                                    </Stack>
 
-                </Box>
-               
-            </Modal>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {data.totalNoOfQuestion} questions
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        <small>Created on {new Date(data.createdOn).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}</small>
+                                                    </Typography>       
+                                                    
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        <small>Credits {data.createdBy}</small>
+                                                    </Typography>                                            
+                                                    <Stack direction="row" justifyContent="right">
+                                                        <Button variant="outlined" size="small" className='text-main border-main' onClick={()=>handleRoutes("/contribute/questions",{state:{courseId:data.courseId,courseName:data.courseName}})}>View</Button>
+                                                    </Stack>
+                                                </CardContent>
+                                                    
+                                            </Card>
+                                        </Grid>
+                                        
+                                    ))
+                                }
+                                </Grid>
+                            </Container>
+                        </Grid>
+                    </Grid>
+                    <br/>
+                    <Modal
+                        open={addCourseModalState}
+                        onClose={closeAddCourseModal}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                    >
+                        <Box sx={modalStyle}>
+                            <AddCourseForm />
+
+                        </Box>
+                    
+                    </Modal>
+                </div>
+            }
         </div>
     )
 }

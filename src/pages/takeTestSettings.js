@@ -51,12 +51,13 @@ function TakeTestSettings(props)
     // Declaring Form Data State
     const [form_data, setForm_data] = useState(
         {
+            courseId:props.data.courseId,
             courseName:props.data.courseName,
             mode:props.data.mode,
             duration:props.data.duration,
             webcam:props.data.webcam,
             image:imgSrc,
-            noOfQuestions:props.data.noOfQuestion,
+            noOfQuestion:props.data.noOfQuestion,
             cookie:''
         }
     );
@@ -94,6 +95,7 @@ function TakeTestSettings(props)
     useEffect(()=>{
         setForm_data((form_data) => ({ ...form_data, ["image"]: imgSrc }))
     },[imgSrc])
+    
     return(
         <div>
             <form autoComplete="off" onSubmit={submitData}>
@@ -156,7 +158,7 @@ function TakeTestSettings(props)
                                         <TextField
                                             id="noOfQuestion"
                                             label="No. of Questions"
-                                            name="noOfQuestions"
+                                            name="noOfQuestion"
                                             type="number"
                                             size="small"
                                             sx={{ width: '100%' }}

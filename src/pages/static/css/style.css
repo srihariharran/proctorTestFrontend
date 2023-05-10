@@ -54,6 +54,11 @@
 .bg-main
 {
     background: #0e2740 !important;
+    color:#ffffff;
+}
+.text-center
+{
+    text-align: center;
 }
 .border-color-main
 {

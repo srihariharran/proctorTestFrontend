@@ -33,6 +33,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Alert from '@mui/material/Alert';
+import { decryptData } from './functions/crypto';
 
 
 // Test Page Function
@@ -227,20 +230,23 @@ function TestPage()
         setStartTestModalState(false);
     }
     // Function to end test
-    const endTest = () => {
+    const openEndTestModal = () => {
         fullScreen();
         setEndTestModalState(true);
     }
-
+    const closeEndTestModal = () => {
+        setEndTestModalState(false);
+    }
     // State Variable to Store Form Data
     const [form_data,setForm_data] = useState(
         {
             tabSwitchCount:tabSwitchCount,
             webcamCount:webcamCount,
+            courseId:courseDetails.courseId,
             details:{}
         }        
     );
-    const [currentDate,setCurrentDate] = useState(Date.now()+ (1000*3600))
+    const [currentDate,setCurrentDate] = useState(Date.now()+ (60000*courseDetails.duration))
     // Function to update the question and answers
     const updateFormData = (event) => {
         // console.log(event)
@@ -273,72 +279,304 @@ function TestPage()
             setEndTestBtnState(true)
         }
     }
+    const [btnLoad,setBtnLoad] = useState(false)
+    const [alertState,setAlertState] = useState({
+        state:false,
+        type:"",
+        message:""
+    })
     // Function to submit the Details
-    const submitData = () =>
+    const submitData = async(event) =>
     {
+        setForm_data((form_data)=>({...form_data,["courseId"]:courseDetails.courseId}))
         console.log(form_data)
-        exitFullscreen()
-        handleRoutes("/courses")
+        event.preventDefault()
+        setBtnLoad(true)
+        try 
+        {
+            let res = await fetch("/api/test/submitDetails",
+            {
+                crossDomain: true,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+decryptData(localStorage.getItem("utils"))["token"],
+                },
+                method: "POST",
+                body: JSON.stringify(form_data),
+            });
+            let resJson = await res.json();
+            if (res.status === 200) {
+                console.log(resJson)
+                setAlertState({
+                    state:true,
+                    message:resJson["message"]
+                })
+                setBtnLoad(false)
+                if(resJson['status'])
+                {
+                    setAlertState((alert)=>({...alert,["type"]:"success"}))
+                    setTimeout(()=>{
+                        exitFullscreen()
+                        handleRoutes("/courses")
+                    },2000)
+                }
+                else
+                {
+                    
+                    setAlertState((alert)=>({...alert,["type"]:"error"}))
+                }
+                setTimeout(()=>{
+                    setAlertState({
+                        state:false,
+                        type:"",
+                        message:""
+                    })
+                },5000)
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
+        
     }
+    const [loginStatus,setLoginStatus] = useState(false)
+    useEffect(()=>{
+        (async () => {
+            // Checking Login Status
+            if(localStorage.getItem("utils"))
+            {
+                
+                try 
+                {
+                    let res = await fetch("/api/test/getDetails",
+                    {
+                        crossDomain: true,
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer '+decryptData(localStorage.getItem("utils"))["token"],
+                        },
+                        method: "POST",
+                        body: JSON.stringify(data),
+                    });
+                    let resJson = await res.json();
+                    if (res.status === 200) {
+                        setCourseDetails(resJson)
+                        setLoginStatus(true)
+                        $('.questions').hide();
+                        $('#question0').show();
+                    }
+                    else
+                    {
+                        localStorage.clear()
+                        handleRoutes("/",{ replace: true })
+                    }
+                }
+                catch (err) {
+                    console.log(err);
+                    localStorage.clear()
+                    handleRoutes("/",{ replace: true })
+                }
+                
+            }
+            else
+            {
+                setLoginStatus(false)
+                localStorage.clear()
+                handleRoutes("/",{ replace: true })
+            }
+        })();
+        
+        
+    },[])
     return(
-        <div onMouseLeave={addTabSwitchCount} onPageHi>
-            {/* Test Page */}
-            <Grid container spacing={2}>
-                <Grid item xs={12}>
-                    <AppBar position='sticky' className="bg-white" elevation={1}>
-                        <Toolbar>
-                            <Typography
-                                variant="h6"
-                                component="div"
-                                className="text-main"
-                                sx={{ flexGrow: 1, display: { xs: 'hide', sm: 'block' } }}
-                            >
-                                <img src={Logo} alt="Logo" className="rounded" />
-                                
-                            </Typography>
+        <div onMouseLeave={addTabSwitchCount}>
+             {
+                (loginStatus) &&
+                <div>
+                    {/* Test Page */}
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            <AppBar position='sticky' className="bg-white" elevation={1}>
+                                <Toolbar>
+                                    <Typography
+                                        variant="h6"
+                                        component="div"
+                                        className="text-main"
+                                        sx={{ flexGrow: 1, display: { xs: 'hide', sm: 'block' } }}
+                                    >
+                                        <img src={Logo} alt="Logo" className="rounded" />
+                                        
+                                    </Typography>
+                                    
+                                    <Box sx={{ display: {xs:'none',sm: 'block' } }}>
+                                        <Button variant="contained" className="bg-main">
+                                            Time Left: &nbsp;<Countdown date={currentDate} onComplete={submitData}/>                                   
+                                        </Button>
+                                        &nbsp;
+                                        &nbsp;
+                                        <Button variant="contained" color="error" onClick={openEndTestModal}>
+                                            End Test                                    
+                                        </Button>
+                                    </Box>
+                                </Toolbar>
+                            </AppBar>
+                        </Grid>
+                    
+                        <Grid item xs={12}>
+                            <Stack direction="row" justifyContent="center">
+                                <h4>
+                                    <b>{courseDetails.courseName}</b>
+                                </h4>
+                            </Stack>
+                            <Grid container>
+                                <Grid item xs={12} sm={3} sx={{maxHeight:"75vh",overflow:'auto'}}>
+                                    <Stack direction="row" justifyContent="center">
+                                        {/* <Webcam
+                                            audio={false}
+                                            // ref={webcamRef}
+                                            height={250}
+                                            width={250}
+                                            screenshotFormat="image/jpeg"
+                                        /> */}
+                                    </Stack>
+                                    <Stack direction="row" justifyContent="center">
+                                        <TableContainer component={Paper} sx={{ maxWidth: '80%' }}>
+                                            <Table >
+                                                <TableBody>
+                                                    <TableRow>
+                                                        <TableCell>Tab Switch Count</TableCell>
+                                                        <TableCell>{tabSwitchCount}</TableCell>
+                                                    </TableRow>
+                                                    {
+                                                        (courseDetails.webcam=="yes")&&
+                                                        <TableRow>
+                                                            <TableCell>Webcam Count</TableCell>
+                                                            <TableCell>5</TableCell>
+                                                        </TableRow>
+                                                    }
+                                                    
+                                                    <TableRow>
+                                                        <TableCell>Questions Answered</TableCell>
+                                                        <TableCell>{answeredQuestions}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell>Questions Not Answered</TableCell>
+                                                        <TableCell>{courseDetails.noOfQuestion-answeredQuestions}</TableCell>
+                                                    </TableRow>
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                    </Stack>
+                                </Grid>
+                                <Grid item xs={12} sm={6} sx={{maxHeight:"75vh",minHeight:"75vh",overflow:'auto',borderLeft:{xs:'none',sm:'1px solid #0e2740'},borderRight:{xs:'none',sm:'1px solid #0e2740'}}} >
+                                    <AppBar position='static' className="bg-white" elevation={0} sx={{}}>
+                                        <Toolbar>
+                                            <Stack direction="row" justifyContent="space-between" sx={{width:"100%"}} className="text-main">
+                                                <Button variant="contained" className="bg-main" disabled={previousBtnState} color="primary" type="button" onClick={previousQuestion}>
+                                                    Previous                            
+                                                </Button>
+                                                <div style={{paddingTop:"1%"}}>
+                                                    Question {questionState+1}/{courseDetails.noOfQuestion}
+                                                </div>
+                                                <Button variant="contained" className="bg-main" disabled={nextBtnState} color="primary" type="button" onClick={nextQuestion}>
+                                                    Next                            
+                                                </Button>
+                                            </Stack>                                        
+                                        </Toolbar>
+                                    </AppBar>
+                                    <Stack direction="row" sx={{padding:"5%",}}>
+                                        {
+                                            courseDetails.details.map((data,index)=>(
+                                                <div key={index} id={"question"+index} className="questions">
+                                                    <FormControl>
+                                                        <FormLabel id={"option"+index}>{data.question}</FormLabel>
+                                                        <RadioGroup
+                                                            name={data.question}
+                                                            onChange={updateFormData}
+                                                        >
+                                                            
+                                                            <Options option={data.options} />
+                                                        </RadioGroup>
+                                                    </FormControl>
+                                                </div>
+                                                
+                                            ))
+                                        }
+                                    </Stack>
+                                </Grid>
+                                <Grid item xs={12} sm={3} sx={{paddingLeft:"1.5%",maxHeight:"75vh",overflow:'auto'}}>
+                                    <Stack spacing={{ xs: 1, sm: 2 }}  direction="row" justifyContent="center" useFlexGap flexWrap="wrap">
+                                        <Button variant='container' className="border-main bg-main text-white small-btn-font" type="button" size="small">
+                                            Answered
+                                        </Button>
+                                    
+                                        <Button variant='outlined' className="border-main small-btn-font" type="button" size="small">
+                                            Not Answered
+                                        </Button>
+                                    </Stack>
+                                    <br/>
+                                    <QuestionList />
+                                </Grid>
+                            </Grid>
+                            <br/>
                             
-                            <Box sx={{ display: {xs:'none',sm: 'block' } }}>
+                        </Grid>
+                    </Grid>
+                    <AppBar position='fixed' className="bg-white" sx={{ top: 'auto', bottom: 0, display:{xs:'block',sm:'none'} }}>
+                        <Toolbar>
+                            <Box>
                                 <Button variant="contained" className="bg-main">
-                                    Time Left: &nbsp;<Countdown date={currentDate} onComplete={submitData}/>                                   
+                                    Time Left: &nbsp;<Countdown date={currentDate}  onComplete={submitData}/>                                   
                                 </Button>
                                 &nbsp;
                                 &nbsp;
-                                <Button variant="contained" color="error" onClick={endTest}>
+                                <Button variant="contained"  color="error" onClick={openEndTestModal}>
                                     End Test                                    
                                 </Button>
                             </Box>
                         </Toolbar>
                     </AppBar>
-                </Grid>
-               
-                <Grid item xs={12}>
-                    <Stack direction="row" justifyContent="center">
-                        <h4>
-                            <b>{courseDetails.courseName}</b>
-                        </h4>
-                    </Stack>
-                    <Grid container>
-                        <Grid item xs={12} sm={3} sx={{maxHeight:"75vh",overflow:'auto'}}>
+                    <br/>
+                    <Modal
+                        open={startTestModalState}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                        sx={{backgroundColor:'rgba(0,0,0,0.95)'}}
+                    >
+                        <Box sx={modalStyle}>
+                            <h1>All the Best. Do Well</h1>
+                            <b>Note: </b> 
+                            <ol>
+                                <li>Timer already started</li>
+                                <li>Don't exit fullscreen. In case you exit the test will submitted automatically and consider this as malpractice.</li>
+                            </ol>
+                            <br/>
+                            <br/>
                             <Stack direction="row" justifyContent="center">
-                                {/* <Webcam
-                                    audio={false}
-                                    // ref={webcamRef}
-                                    height={250}
-                                    width={250}
-                                    screenshotFormat="image/jpeg"
-                                /> */}
+                                <Button variant='contained' onClick={startTest} color="success">
+                                    Start
+                                </Button>
                             </Stack>
+                            
+
+                        </Box>
+                    
+                    </Modal>
+                    <Modal
+                        open={endTestModalState}
+                        onClose={closeEndTestModal}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                    >
+                        <Box sx={modalStyle}>
+                            <h5 className="text-main">End Test</h5>
                             <Stack direction="row" justifyContent="center">
-                                <TableContainer component={Paper} sx={{ maxWidth: '80%' }}>
+                                <TableContainer component={Paper} sx={{ maxWidth: '100%' }}>
                                     <Table >
                                         <TableBody>
                                             <TableRow>
-                                                <TableCell>Tab Switch Count</TableCell>
-                                                <TableCell>{tabSwitchCount}</TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell>Webcam Count</TableCell>
-                                                <TableCell>5</TableCell>
+                                                <TableCell>Questions Total</TableCell>
+                                                <TableCell>{courseDetails.noOfQuestion}</TableCell>
                                             </TableRow>
                                             <TableRow>
                                                 <TableCell>Questions Answered</TableCell>
@@ -352,146 +590,26 @@ function TestPage()
                                     </Table>
                                 </TableContainer>
                             </Stack>
-                        </Grid>
-                        <Grid item xs={12} sm={6} sx={{maxHeight:"75vh",minHeight:"75vh",overflow:'auto',borderLeft:{xs:'none',sm:'1px solid #0e2740'},borderRight:{xs:'none',sm:'1px solid #0e2740'}}} >
-                            <AppBar position='static' className="bg-white" elevation={0} sx={{}}>
-                                <Toolbar>
-                                    <Stack direction="row" justifyContent="space-between" sx={{width:"100%"}} className="text-main">
-                                        <Button variant="contained" className="bg-main" disabled={previousBtnState} color="primary" type="button" onClick={previousQuestion}>
-                                            Previous                            
-                                        </Button>
-                                        <div style={{paddingTop:"1%"}}>
-                                            Question {questionState+1}/{courseDetails.noOfQuestion}
-                                        </div>
-                                        <Button variant="contained" className="bg-main" disabled={nextBtnState} color="primary" type="button" onClick={nextQuestion}>
-                                            Next                            
-                                        </Button>
-                                    </Stack>                                        
-                                </Toolbar>
-                            </AppBar>
-                            <Stack direction="row" sx={{padding:"5%",}}>
-                                {
-                                    courseDetails.details.map((data,index)=>(
-                                        <div key={index} id={"question"+index} className="questions">
-                                            <FormControl>
-                                                <FormLabel id={"option"+index}>{data.question}</FormLabel>
-                                                <RadioGroup
-                                                    name={data.question}
-                                                    onChange={updateFormData}
-                                                >
-                                                    
-                                                    <Options option={data.options} />
-                                                </RadioGroup>
-                                            </FormControl>
-                                        </div>
-                                        
-                                    ))
-                                }
-                            </Stack>
-                        </Grid>
-                        <Grid item xs={12} sm={3} sx={{paddingLeft:"1.5%",maxHeight:"75vh",overflow:'auto'}}>
-                            <Stack spacing={{ xs: 1, sm: 2 }}  direction="row" justifyContent="center" useFlexGap flexWrap="wrap">
-                                <Button variant='container' className="border-main bg-main text-white small-btn-font" type="button" size="small">
-                                    Answered
-                                </Button>
-                            
-                                <Button variant='outlined' className="border-main small-btn-font" type="button" size="small">
-                                    Not Answered
-                                </Button>
+                            <small>
+                                <strong>Note:&nbsp;</strong>
+                                <p>
+                                    Type "end test" in the below text field to end the test
+                                </p>
+                            </small>
+                            <Stack direction="row">
+                                <TextField name="endTest" variant="outlined" label="End Test" size="small" onInput={checkEndTestData} fullWidth />
                             </Stack>
                             <br/>
-                            <QuestionList />
-                        </Grid>
-                    </Grid>
-                    <br/>
+                            <Stack direction="row" justifyContent="center">
+                                <Button variant='contained' color='error' onClick={submitData} disabled={endTestBtnState}>
+                                    End Test
+                                </Button>
+                            </Stack>
+                        </Box>
                     
-                </Grid>
-            </Grid>
-            <AppBar position='fixed' className="bg-white" sx={{ top: 'auto', bottom: 0, display:{xs:'block',sm:'none'} }}>
-                <Toolbar>
-                    <Box>
-                        <Button variant="contained" className="bg-main">
-                            Time Left: &nbsp;<Countdown date={currentDate}  onComplete={submitData}/>                                   
-                        </Button>
-                        &nbsp;
-                        &nbsp;
-                        <Button variant="contained"  color="error" onClick={endTest}>
-                            End Test                                    
-                        </Button>
-                    </Box>
-                </Toolbar>
-            </AppBar>
-            <br/>
-            <Modal
-                open={startTestModalState}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-                sx={{backgroundColor:'rgba(0,0,0,0.95)'}}
-            >
-                <Box sx={modalStyle}>
-                    <h1>All the Best. Do Well</h1>
-                    <b>Note: </b> 
-                    <ol>
-                        <li>Timer already started</li>
-                        <li>Don't exit fullscreen. In case you exit the test will submitted automatically and consider this as malpractice.</li>
-                    </ol>
-                    <br/>
-                    <br/>
-                    <Stack direction="row" justifyContent="center">
-                        <Button variant='contained' onClick={startTest} color="success">
-                            Start
-                        </Button>
-                    </Stack>
-                    
-
-                </Box>
-               
-            </Modal>
-            <Modal
-                open={endTestModalState}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-            >
-                <Box sx={modalStyle}>
-                    <h5 className="text-main">End Test</h5>
-                    <Stack direction="row" justifyContent="center">
-                        <TableContainer component={Paper} sx={{ maxWidth: '100%' }}>
-                            <Table >
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell>Questions Total</TableCell>
-                                        <TableCell>{courseDetails.noOfQuestion}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>Questions Answered</TableCell>
-                                        <TableCell>{answeredQuestions}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>Questions Not Answered</TableCell>
-                                        <TableCell>{courseDetails.noOfQuestion-answeredQuestions}</TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Stack>
-                    <small>
-                        <strong>Note:&nbsp;</strong>
-                        <p>
-                            Type "end test" in the below text field to end the test
-                        </p>
-                    </small>
-                    <Stack direction="row">
-                        <TextField name="endTest" variant="outlined" label="End Test" size="small" onInput={checkEndTestData} fullWidth />
-                    </Stack>
-                    <br/>
-                    <Stack direction="row" justifyContent="center">
-                        <Button variant='contained' color='error' onClick={submitData} disabled={endTestBtnState}>
-                            End Test
-                        </Button>
-                    </Stack>
-                </Box>
-               
-            </Modal>
+                    </Modal>
+                </div>
+            }
             
         </div>
     )

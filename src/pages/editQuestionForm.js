@@ -21,8 +21,8 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { decryptData } from './functions/crypto';
 
-// Add Question Form Page Function
-function AddQuestionForm(props)
+// Edit Question Form Page Function
+function EditQuestionForm(props)
 {
     // Declaring Product Id State
     const [option_ids, setOption_ids] = useState([]);
@@ -47,12 +47,14 @@ function AddQuestionForm(props)
     // Declaring Form Data State
     const [form_data, setForm_data] = useState(
         {
-            question:'',
-            correctAnswer:'',
-            courseId:props.courseId
+            question:props.data.question,
+            correctAnswer:props.data.correctAnswer,
+            questionId:props.data.questionId,
+            courseId:props.data.courseId
         }
     );
-
+   
+    
     // Function to update the form data
     const updateFormData = (event) => {
         const { name, value } = event.target;
@@ -67,10 +69,11 @@ function AddQuestionForm(props)
     // Function to submit form data
     const submitData = async(event) => {
         event.preventDefault()
+        console.log(form_data)
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/question/addDetails",
+            let res = await fetch("/api/question/editDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -123,6 +126,11 @@ function AddQuestionForm(props)
             }
         });
     },[form_data]);
+    useEffect(()=>{
+        props.data.options.map((option,index)=>(
+            setForm_data((form_data) => ({...form_data,["option"+index]:option}))
+        ))
+    },[])
     return(
         <div>
             <form autoComplete="off" id="form" onSubmit={submitData}>
@@ -131,7 +139,7 @@ function AddQuestionForm(props)
                 <div>
                     <Paper elevation={0} sx={{ padding: '0%' }}>
                         <div style={{ fontWeight: 'bold' }}>
-                            Add Question
+                            Edit Question
                         </div>
                         <br />
                         <Stack direction="row" >
@@ -139,15 +147,43 @@ function AddQuestionForm(props)
                             id="question"
                             label="Question"
                             name="question"
+                            value={form_data.question}
                             size="small"
                             sx={{ width: '100%' }}
                             onChange={updateFormData}
-                            required
+                            disabled
                             />
                         </Stack>
                         <br />
-                        
-                        <Stack direction="row" justifyContent="space-between" className="options">
+                        {
+                            props.data.options.map((option,index)=>(
+                                <div>
+                                    <Stack direction="row" justifyContent="space-between" className="options">
+                                        <TextField
+                                        id={"option"+index}
+                                        label="Option"
+                                        name={"option"+index}
+                                        value={form_data["option"+index]}
+                                        size="small"
+                                        sx={{ width: '49.5%' }}
+                                        onChange={updateFormData}
+                                        required
+                                        />
+                                        {
+                                            (index==0)&&
+                                            <Button title="Add Option" variant="contained" type="button" onClick={addOption} color="primary" endIcon={<AddCircleOutlineIcon />}>
+                                                Add
+                                            </Button>
+                                        }
+                                        
+                                        
+                                    </Stack>
+                                    <br/>
+                                </div>
+                                
+                            ))
+                        }
+                        {/* <Stack direction="row" justifyContent="space-between" className="options">
                             <TextField
                             id="option1"
                             label="Option"
@@ -174,7 +210,7 @@ function AddQuestionForm(props)
                             required
                             />
                         </Stack>
-                        <br/>
+                        <br/>*/}
                         {
                         option_ids.map((id,index) => (
                             <div id={"option"+option_ids[index]}>
@@ -197,7 +233,7 @@ function AddQuestionForm(props)
                             </div>
                            
                         ))
-                        }
+                        } 
                         
                         <br />
                         <Stack direction="row">
@@ -208,10 +244,11 @@ function AddQuestionForm(props)
                                     id="correctAnswer"
                                     label="Correct Answer"
                                     name="correctAnswer"
+                                    value={form_data.correctAnswer}
                                     onChange={updateFormData}
                                 >
                                     {
-                                        optionsList.map((option)=>(
+                                       optionsList.map((option)=>(
                                             <MenuItem value={form_data[option]}>{form_data[option]}</MenuItem>
                                         ))
                                     }
@@ -232,7 +269,7 @@ function AddQuestionForm(props)
                         <Alert severity={alertState.type}>{alertState.message}</Alert>
                     }
                     
-                    <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Add</span></LoadingButton>
+                    <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Edit</span></LoadingButton>
                     </div>
                 </div>
                     
@@ -245,4 +282,4 @@ function AddQuestionForm(props)
 }
 
 
-export default AddQuestionForm;
+export default EditQuestionForm;

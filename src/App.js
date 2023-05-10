@@ -1,5 +1,6 @@
 // Importing Required Packages
 import { BrowserRouter,Routes,Route, Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import LoginPage from './pages/login';
 import CoursePage from './pages/courses';
 import ContributePage from './pages/contribute';
@@ -11,6 +12,30 @@ import ForgotPasswordPage from './pages/forgotPassword';
 
 // App Function
 function App() {
+
+  useEffect(()=>{
+    (async () => {
+
+      try{
+        let res = await fetch('/connect',
+        {
+            crossDomain: true,
+            headers: { 'Content-Type': 'application/json' },
+            method: "POST"
+        });
+        let resJson = await res.json();
+        if (!res.status === 200) {
+          console.log("Connection Failed")
+        }
+      }
+      catch (err) {
+          console.log(err);
+      }
+  
+    })();
+    
+  },[])
+
   return (
     // Routes for the application
     <BrowserRouter>
