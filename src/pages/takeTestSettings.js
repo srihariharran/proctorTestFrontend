@@ -13,17 +13,9 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Container from '@mui/material/Container';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import CancelIcon from '@mui/icons-material/Cancel';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import AddBoxIcon from '@mui/icons-material/AddBox';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Alert from '@mui/material/Alert';
+import { decryptData } from './functions/crypto';
 
 
 // Take Test Settings Page Function
@@ -39,8 +31,13 @@ function TakeTestSettings(props)
     const [imgSrc, setImgSrc] = React.useState(null);
     // Function to capture Image
     const capture = React.useCallback(() => {
-        const imageSrc = webcamRef.current.getScreenshot();
-        setImgSrc(imageSrc);
+        if (webcamRef.current) {
+            const imageSrc = webcamRef.current.getScreenshot();
+            setImgSrc(imageSrc);
+            
+        }
+        
+        
     }, [webcamRef, setImgSrc]);
     // Function to reset the webcam data
     const captureAgain = React.useCallback(() => {
@@ -57,35 +54,114 @@ function TakeTestSettings(props)
             duration:props.data.duration,
             webcam:props.data.webcam,
             image:imgSrc,
+            ip:'',
+            platform:'',
             noOfQuestion:props.data.noOfQuestion,
-            cookie:''
         }
     );
     // Function to update the form data
     const updateFormData = (event) => {
         const { name, value } = event.target;
         setForm_data((form_data) => ({ ...form_data, [name]: value }))
+        // if(form_data.webcam=="yes")
+        // {
+        //     setInterval(capture,5000)
+            
+        // }   
+       
+    }
+    const [btnLoad,setBtnLoad] = useState(false)
+    const [alertState,setAlertState] = useState({
+        state:false,
+        type:"",
+        message:""
+    })
+    // Function to start test
+    const startTest = async() => {
+        try 
+        {
+            let res = await fetch("/api/test/startDetails",
+            {
+                crossDomain: true,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+decryptData(localStorage.getItem("utils"))["token"],
+                },
+                method: "POST",
+                body: JSON.stringify(form_data),
+            });
+            let resJson = await res.json();
+            if (res.status === 200) {
+                
+                setForm_data((form_data)=>({...form_data,["reportId"]:resJson["id"]}))
+                // setForm_data((form_data)=>({...form_data,["test"]:resJson["id"]}))
+                
+                setAlertState({
+                    state:true,
+                    message:resJson["message"]
+                })
+                if(resJson['status'])
+                {
+                    setAlertState((alert)=>({...alert,["type"]:"success"}))
+                    setTimeout(()=>{
+                        fullScreen()
+                        handleRoutes("/course/test-instructions",{state:{form_data},replace:true});
+                    },2000)
+                }
+                else
+                {
+                    setBtnLoad(false)
+                    setAlertState((alert)=>({...alert,["type"]:"error"}))
+                }
+                
+                
+            }
+            else
+            {
+                localStorage.clear()
+                handleRoutes("/",{ replace: true })
+            }
+        }
+        catch (err) {
+            console.log(err);
+            localStorage.clear()
+            handleRoutes("/",{ replace: true })
+        }
     }
     // Function to submit form data
     const submitData = async(event) => {
         event.preventDefault()
-        console.log(form_data);
+        console.log(form_data)
         if(form_data.webcam=="yes")
         {
             if(form_data.image)
             {
-                fullScreen()
-                handleRoutes("/course/test-instructions",{state:{form_data},replace:true});
+                setBtnLoad(true)
+                startTest()
+                
             }
             else
             {
-                alert("Capture Photo");
+                setBtnLoad(false)
+                setAlertState({
+                    state:true,
+                    message:"Capture Photo",
+                    type:"error"
+                })
+                setTimeout(()=>{
+                    setAlertState({
+                        state:false,
+                        type:"",
+                        message:""
+                    })
+                },5000)
             }
         }
         else
         {
-            fullScreen()
-            handleRoutes("/course/test-instructions",{state:{form_data},replace:true});
+            setBtnLoad(true)
+            startTest()
+            
         }
     }
     // Switch to Full Screen
@@ -95,7 +171,33 @@ function TakeTestSettings(props)
     useEffect(()=>{
         setForm_data((form_data) => ({ ...form_data, ["image"]: imgSrc }))
     },[imgSrc])
-    
+
+    useEffect(()=>{
+        (async () => {
+            // Getting Ip Address and Platform
+            try 
+            {
+                let res = await fetch("https://api.ipify.org/?format=json",
+                {
+                    crossDomain: true,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                    },
+                    method: "GET",
+                });
+                let resJson = await res.json();
+                if (res.status === 200) {
+                    setForm_data((form_data)=>({...form_data,["ip"]:resJson["ip"]}))
+                    setForm_data((form_data)=>({...form_data,["platform"]:window.navigator.platform}))
+                }
+            }
+            catch (err) {
+                console.log(err);
+            }
+        })();
+        
+        
+    },[])
     return(
         <div>
             <form autoComplete="off" onSubmit={submitData}>
@@ -231,9 +333,15 @@ function TakeTestSettings(props)
                     
                     <br />
                     <div style={{ textAlign: 'right', marginRight: '1%' }}>
-                        <Button variant="contained" type="submit" color="success">
+                        {
+                            (alertState.state)&&
+                            <Alert severity={alertState.type}>{alertState.message}</Alert>
+                        }
+                        
+                        <LoadingButton loading={btnLoad} type="submit" variant="contained" color="success"><span>Take Test</span></LoadingButton>
+                        {/* <Button variant="contained" type="submit" color="success">
                             Take Test
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
                     

@@ -35,6 +35,7 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
 import { decryptData } from './functions/crypto';
 
 
@@ -44,6 +45,7 @@ function TestPage()
     // Getting from location
     const location = useLocation()
     const data = location.state
+    // console.log(data)
     // TO Navigate Page
     let navigate = useNavigate(); 
     const handleRoutes = (path) => {
@@ -62,22 +64,15 @@ function TestPage()
         boxShadow: 24,
         p: 4,
     };
+
+    
+
     // Function to Open or Close Start Test Modal
     const [startTestModalState, setStartTestModalState] = useState(true);
-    // const openStartTestModal = () => {
-    //     setStartTestModalState(true);
-    // }
-    // const closeStartTestModal = () => {
-    //     setStartTestModalState(false);
-    // }
+
     // // Function to Open or Close End Test Modal
     const [endTestModalState, setEndTestModalState] = useState(false);
-    // const openEndTestModal = () => {
-    //     setEndTestModalState(true);
-    // }
-    // const closeEndTestModal = () => {
-    //     setEndTestModalState(false);
-    // }
+
     // State variable for Course Details
     const [courseDetails,setCourseDetails] = useState(
         {
@@ -90,18 +85,6 @@ function TestPage()
             details:[
             {
                 question:'What is HTML1?',
-                options:['Web page','mobile page']
-            },
-            {
-                question:'What is HTML2?',
-                options:['Web page','mobile page']
-            },
-            {
-                question:'What is HTML3?',
-                options:['Web page','mobile page']
-            },
-            {
-                question:'What is HTML4?',
                 options:['Web page','mobile page']
             }
             ]
@@ -172,20 +155,25 @@ function TestPage()
     const [webcamCount,setWebcamCount] = useState(0);
     // Jquery Function to Count Tab Switch
     const addTabSwitchCount = () => {
-        setTabSwitchCount(tabSwitchCount+1);
+        setTabSwitchCount((tab)=>tab+1);
+        
     }
     useEffect(()=>{
-       if(tabSwitchCount==courseDetails.tabSwitchLimit)
-       {
-        submitData()
-       }
+        setForm_data((form_data)=>({...form_data,["tabSwitchCount"]:tabSwitchCount}))
+        if(tabSwitchCount==courseDetails.tabSwitchLimit)
+        {
+            submitData()
+        }
     },[tabSwitchCount])
     useEffect(()=>{
+        setForm_data((form_data)=>({...form_data,["webcamCount"]:webcamCount}))
+        
         if(webcamCount==courseDetails.webcamLimit)
         {
          submitData()
         }
-     },[tabSwitchCount])
+     },[webcamCount])
+    
     // Funcction to show the current Question
     const MoveToQuestion = (id) => {
         // Hiding all Question div which has classname question using jquery
@@ -215,34 +203,23 @@ function TestPage()
     useEffect(()=>{
         MoveToQuestion(questionState);
     },[questionState])
-    // Switch to Full Screen
-    const fullScreen = () => {
-        document.documentElement.requestFullscreen();
-    }
-
-    // Exit FullScreen
-    const exitFullscreen = () => {
-        document.exitFullscreen();
-    }
-    // Function to start test
-    const startTest = () => {
-        fullScreen();
-        setStartTestModalState(false);
-    }
-    // Function to end test
-    const openEndTestModal = () => {
-        fullScreen();
-        setEndTestModalState(true);
-    }
-    const closeEndTestModal = () => {
-        setEndTestModalState(false);
-    }
+    
+    const [images,setImages] = useState([])
+    useEffect(()=>{
+        
+        setForm_data((form_data)=>({...form_data,["images"]:images}))
+        
+     },[images])
     // State Variable to Store Form Data
     const [form_data,setForm_data] = useState(
         {
             tabSwitchCount:tabSwitchCount,
             webcamCount:webcamCount,
             courseId:courseDetails.courseId,
+            ip:data.ip,
+            platform:data.platform,
+            images:images,
+            courseId:data.courseId,
             details:{}
         }        
     );
@@ -265,7 +242,8 @@ function TestPage()
     const [answeredQuestions,setAnsweredQuestions] = useState(0);
     useEffect(()=>{
         setAnsweredQuestions(Object.keys(form_data.details).length)
-    },[form_data,questionState,nextBtnState,previousBtnState])
+        
+    },[form_data,nextBtnState,previousBtnState])
     // Function to check end test given by user
     const [endTestBtnState,setEndTestBtnState] = useState(true)
     const checkEndTestData = (event) => {
@@ -339,13 +317,126 @@ function TestPage()
         }
         
     }
+    
+    // Declaring Ref for Webcam
+    const webcamRef = React.useRef(null);
+    const [imgSrc, setImgSrc] = React.useState(null);
+    // Function to capture Image
+    const capture = React.useCallback(() => {
+        if (webcamRef.current) {
+            const imageSrc = webcamRef.current.getScreenshot();
+            setImgSrc(imageSrc);
+            
+            checkWebcam(imageSrc)
+        }
+        
+        
+    }, [webcamRef, setImgSrc]);
+    // Function to reset the webcam data
+    const captureAgain = React.useCallback(() => {
+        webcamRef.current = null;
+        setImgSrc(null);
+        
+    }, [webcamRef, setImgSrc]);
+    // useEffect(()=>{
+    //     console.log(imgSrc)
+    // },[imgSrc])
+    // Switch to Full Screen
+    const fullScreen = () => {
+        document.documentElement.requestFullscreen();
+    }
+
+    // Exit FullScreen
+    const exitFullscreen = () => {
+        document.exitFullscreen();
+    }
+    // Function to start test
+    const startTest = () => {
+        fullScreen();
+        setStartTestModalState(false);
+        if(courseDetails['webcam']=="yes")
+        {
+            setInterval(capture,5000)
+            // setInterval(captureAgain,6000)
+        }
+    }
+    // Function to end test
+    const openEndTestModal = () => {
+        fullScreen();
+        setEndTestModalState(true);
+    }
+    const closeEndTestModal = () => {
+        setEndTestModalState(false);
+    }
+    const [webcamAlert,setWebcamAlert] = useState({
+        state:false,
+        message:'',
+        color:''
+    })
+    // Function to check person available or not 
+    const checkWebcam = async(img) => {
+        // capture()
+        // console.log("Start")
+        try     
+        {
+            let res = await fetch("/api/checkFace",
+            {
+                crossDomain: true,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+decryptData(localStorage.getItem("utils"))["token"],
+                },
+                method: "POST",
+                body: JSON.stringify({
+                    image:img
+                }),
+            });
+            let resJson = await res.json();
+            if (res.status === 200) {
+               
+                if(resJson["status"]){
+                    if(resJson["count"]!=1)
+                    {
+                        
+                        setWebcamCount((count) => count+1)
+                        setImages((image)=>([...image,img]))
+                        setWebcamAlert({
+                            state:true,
+                            message:resJson['message'],
+                            color:'red'
+                        })
+                        setTimeout(()=>{
+                            setWebcamAlert({
+                                state:false,
+                                message:resJson['message'],
+                                color:'green'
+                            })
+                        },4000)
+                    }
+                    
+                }
+            }
+            else
+            {
+                // console.log(res)
+                localStorage.clear()
+                handleRoutes("/",{ replace: true })
+            }
+        }
+        catch (err) {
+            console.log(err);
+            localStorage.clear()
+            handleRoutes("/",{ replace: true })
+        }
+        // console.log("End")
+    }
+    // Checking Login State
     const [loginStatus,setLoginStatus] = useState(false)
     useEffect(()=>{
         (async () => {
             // Checking Login Status
             if(localStorage.getItem("utils"))
             {
-                
                 try 
                 {
                     let res = await fetch("/api/test/getDetails",
@@ -364,6 +455,8 @@ function TestPage()
                         setLoginStatus(true)
                         $('.questions').hide();
                         $('#question0').show();
+                        
+                        
                     }
                     else
                     {
@@ -384,6 +477,7 @@ function TestPage()
                 localStorage.clear()
                 handleRoutes("/",{ replace: true })
             }
+            
         })();
         
         
@@ -431,14 +525,25 @@ function TestPage()
                             <Grid container>
                                 <Grid item xs={12} sm={3} sx={{maxHeight:"75vh",overflow:'auto'}}>
                                     <Stack direction="row" justifyContent="center">
-                                        {/* <Webcam
-                                            audio={false}
-                                            // ref={webcamRef}
-                                            height={250}
-                                            width={250}
-                                            screenshotFormat="image/jpeg"
-                                        /> */}
+                                        {
+                                            (courseDetails.webcam=="yes")&&
+                                            <Webcam
+                                                audio={false}
+                                                ref={webcamRef}
+                                                height={250}
+                                                width={250}
+                                                screenshotFormat="image/jpeg"
+                                            />
+                                        }
+                                        
                                     </Stack>
+                                    {
+                                        (webcamAlert.state)&&
+                                        <Stack direction="row" justifyContent="center">
+                                            <Chip label={webcamAlert.message} style={{background:webcamAlert.color,color:"white"}} />
+                                        </Stack>
+                                    }
+                                    
                                     <Stack direction="row" justifyContent="center">
                                         <TableContainer component={Paper} sx={{ maxWidth: '80%' }}>
                                             <Table >
@@ -451,7 +556,7 @@ function TestPage()
                                                         (courseDetails.webcam=="yes")&&
                                                         <TableRow>
                                                             <TableCell>Webcam Count</TableCell>
-                                                            <TableCell>5</TableCell>
+                                                            <TableCell>{webcamCount}</TableCell>
                                                         </TableRow>
                                                     }
                                                     
@@ -601,9 +706,16 @@ function TestPage()
                             </Stack>
                             <br/>
                             <Stack direction="row" justifyContent="center">
-                                <Button variant='contained' color='error' onClick={submitData} disabled={endTestBtnState}>
+                                
+                                
+                                <LoadingButton loading={btnLoad} onClick={submitData} variant="contained" color="error" disabled={endTestBtnState}><span>End Test</span></LoadingButton>
+                                {
+                                    (alertState.state)&&
+                                    <Alert severity={alertState.type}>{alertState.message}</Alert>
+                                }
+                                {/* <Button variant='contained' color='error' onClick={submitData} disabled={endTestBtnState}>
                                     End Test
-                                </Button>
+                                </Button> */}
                             </Stack>
                         </Box>
                     

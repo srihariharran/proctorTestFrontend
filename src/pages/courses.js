@@ -109,6 +109,7 @@ function CoursePage()
                 localStorage.clear()
                 handleRoutes("/",{ replace: true })
             }
+            
         })();
         
         
@@ -132,6 +133,7 @@ function CoursePage()
                                 </div>
                                 <Divider />
                                 <br/>
+                                
                                 <Grid container spacing={2}>
                                 {
                                      (courseDetails.length==0)?
