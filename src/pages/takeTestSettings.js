@@ -21,7 +21,7 @@ import { decryptData } from './functions/crypto';
 // Take Test Settings Page Function
 function TakeTestSettings(props)
 {
-
+    console.log(props)
     let navigate = useNavigate(); 
     const handleRoutes = (path,state) => {
         navigate(path,state)
@@ -54,6 +54,7 @@ function TakeTestSettings(props)
             duration:props.data.duration,
             webcam:props.data.webcam,
             image:imgSrc,
+            reportId:props.data.reportId,
             ip:'',
             platform:'',
             noOfQuestion:props.data.noOfQuestion,
@@ -76,6 +77,9 @@ function TakeTestSettings(props)
         type:"",
         message:""
     })
+    const [disableField,setDisableField] = useState(false)
+    
+
     // Function to start test
     const startTest = async() => {
         try 
@@ -92,10 +96,7 @@ function TakeTestSettings(props)
             });
             let resJson = await res.json();
             if (res.status === 200) {
-                
-                setForm_data((form_data)=>({...form_data,["reportId"]:resJson["id"]}))
-                // setForm_data((form_data)=>({...form_data,["test"]:resJson["id"]}))
-                
+                    
                 setAlertState({
                     state:true,
                     message:resJson["message"]
@@ -131,13 +132,29 @@ function TakeTestSettings(props)
     // Function to submit form data
     const submitData = async(event) => {
         event.preventDefault()
-        console.log(form_data)
+        // console.log(form_data)
         if(form_data.webcam=="yes")
         {
             if(form_data.image)
             {
                 setBtnLoad(true)
-                startTest()
+                
+                if(props.data.reportId=="")
+                {
+                    startTest()
+                }
+                else
+                {
+                    setAlertState({
+                        state:true,
+                        message:"Test Started Successfully",
+                        type:"success"
+                    })
+                    setTimeout(()=>{
+                        fullScreen()
+                        handleRoutes("/course/test-instructions",{state:{form_data},replace:true});
+                    },2000)
+                }
                 
             }
             else
@@ -160,7 +177,22 @@ function TakeTestSettings(props)
         else
         {
             setBtnLoad(true)
-            startTest()
+            if(props.data.reportId=="")
+            {
+                startTest()
+            }
+            else
+            {
+                setAlertState({
+                    state:true,
+                    message:"Test Started Successfully",
+                    type:"success"
+                })
+                setTimeout(()=>{
+                    fullScreen()
+                    handleRoutes("/course/test-instructions",{state:{form_data},replace:true});
+                },2000)
+            }
             
         }
     }
@@ -173,6 +205,10 @@ function TakeTestSettings(props)
     },[imgSrc])
 
     useEffect(()=>{
+        if(props.data.reportId!='')
+        {
+            setDisableField(true)
+        }
         (async () => {
             // Getting Ip Address and Platform
             try 
@@ -253,6 +289,7 @@ function TakeTestSettings(props)
                                             sx={{ width: '100%' }}
                                             value={form_data.duration}
                                             onChange={updateFormData}
+                                            disabled={disableField}
                                         />
                                     </Stack>
                                     <br/>
@@ -266,6 +303,7 @@ function TakeTestSettings(props)
                                             sx={{ width: '100%' }}
                                             value={form_data.noOfQuestion}
                                             onChange={updateFormData}
+                                            disabled={disableField}
                                         />
                                     </Stack>
                                     <br/>
@@ -279,53 +317,58 @@ function TakeTestSettings(props)
                                                 name="webcam"
                                                 value={form_data.webcam}
                                                 onChange={updateFormData}
+                                                disabled={disableField}
                                             >
                                                 <MenuItem value="yes">Yes</MenuItem>
                                                 <MenuItem value="no">No</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Stack>
-                                    {
-                                        (form_data.webcam=="yes") &&
-                                        (
-                                            <div>
-                                                <Stack direction="row" justifyContent="center">
-                                                    {imgSrc && (
-                                                        <img
-                                                        src={imgSrc}
-                                                        />
-                                                    ) ||
-                                                    (<Webcam
-                                                        audio={false}
-                                                        ref={webcamRef}
-                                                        height={250}
-                                                        width={250}
-                                                        screenshotFormat="image/jpeg"
-                                                    />)
-                                                    }
-                                                </Stack>
-                                                <Stack direction="row" justifyContent="center">
-                                                    {imgSrc && (
-                                                        <Button variant="contained" onClick={captureAgain} type="button" color="error">
-                                                            Capture Again
-                                                        </Button>
-                                                    )
-                                                    ||
-                                                    (
-                                                        <Button variant="contained" onClick={capture} type="button" color="secondary">
-                                                            Capture
-                                                        </Button>
-                                                    )
-                                                    }
-                                                </Stack> 
-                                            </div>
-                                        )
-                                    }
-                                    
+
+                                    <br/>
                                 </div>
                                 
                             :
                             ''
+                        }
+                        {
+                            (form_data.webcam=="yes") &&
+                            (
+                                <div>
+                                    <h6>
+                                        Capture yourself and take test
+                                    </h6>
+                                    <Stack direction="row" justifyContent="center">
+                                        {imgSrc && (
+                                            <img
+                                            src={imgSrc}
+                                            />
+                                        ) ||
+                                        (<Webcam
+                                            audio={false}
+                                            ref={webcamRef}
+                                            height={250}
+                                            width={250}
+                                            screenshotFormat="image/jpeg"
+                                        />)
+                                        }
+                                    </Stack>
+                                    <Stack direction="row" justifyContent="center">
+                                        {imgSrc && (
+                                            <Button variant="contained" onClick={captureAgain} type="button" color="error">
+                                                Capture Again
+                                            </Button>
+                                        )
+                                        ||
+                                        (
+                                            <Button variant="contained" onClick={capture} type="button" color="secondary">
+                                                Capture
+                                            </Button>
+                                        )
+                                        }
+                                    </Stack> 
+                                </div>
+                            )
                         }
                     </Paper>
 

@@ -162,7 +162,6 @@ function ContributeQuestionsPage()
     // Function to submit form data
     const DeleteQuestionData = async(event,data) => {
         event.preventDefault()
-        console.log(data)
         setBtnLoad(true)
         try 
         {
@@ -187,6 +186,7 @@ function ContributeQuestionsPage()
                 if(resJson['status'])
                 {
                     setAlertState((alert)=>({...alert,["type"]:"success"}))
+                    getQuestionDetails()
                 }
                 else
                 {

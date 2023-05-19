@@ -69,7 +69,6 @@ function EditQuestionForm(props)
     // Function to submit form data
     const submitData = async(event) => {
         event.preventDefault()
-        console.log(form_data)
         setBtnLoad(true)
         try 
         {

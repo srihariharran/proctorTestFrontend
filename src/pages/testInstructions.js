@@ -26,6 +26,7 @@ function TestInstructionsPage()
     // Getting from location
     const location = useLocation()
     const data = location.state.form_data
+    
     // const handle = useFullScreenHandle().enter;
     let navigate = useNavigate(); 
     const handleRoutes = (path) => {
@@ -65,6 +66,7 @@ function TestInstructionsPage()
             if(localStorage.getItem("utils"))
             {
                 setLoginStatus(true)
+
             }
             else
             {

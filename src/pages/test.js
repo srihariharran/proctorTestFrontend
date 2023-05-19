@@ -220,6 +220,7 @@ function TestPage()
             platform:data.platform,
             images:images,
             courseId:data.courseId,
+            reportId:data.reportId,
             details:{}
         }        
     );

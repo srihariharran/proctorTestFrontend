@@ -37,23 +37,25 @@ const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 
-// Add Course Form Page Function
-function AddCourseForm()
+// Edit Course Form Page Function
+function EditCourseForm(props)
 {
 
-
+    
     // Declaring Form Data State
     const [form_data, setForm_data] = useState(
         {
-            courseName:'',
-            mode:'public',
-            noOfQuestion:'',
-            startTime:'',
-            endTime:'',
-            duration:'',
-            tabSwitch:'',
-            webcam:'',
-            webcamLimit:''
+            courseId:props.data.courseId,
+            courseName:props.data.courseName,
+            mode:props.data.mode,
+            noOfQuestion:props.data.noOfQuestion,
+            startTime:props.data.startTime,
+            endTime:props.data.endTime,
+            duration:props.data.duration,
+            tabSwitch:props.data.tabSwitch,
+            webcam:props.data.webcam,
+            webcamLimit:props.data.webcamLimit,
+            users:props.data.users
         }
     );
     // Function to update the form data
@@ -63,12 +65,10 @@ function AddCourseForm()
     }
     const updateStartTimeData = (value) => {
         // const { name } = event.target;
-        console.log(new Date(value).toISOString());
         setForm_data((form_data) => ({ ...form_data, ["startTime"]: value.toISOString() }))
     }
     const updateEndTimeData = (value) => {
         // const { name } = event.target;
-        console.log(new Date(value));
         setForm_data((form_data) => ({ ...form_data, ["endTime"]: value.toISOString() }))
     }
     const [btnLoad,setBtnLoad] = useState(false)
@@ -80,11 +80,11 @@ function AddCourseForm()
     // Function to submit form data
     const submitData = async(event) => {
         event.preventDefault()
-        console.log(userList)
+        console.log(form_data)
         
         try 
         {
-            let res = await fetch("/api/course/addDetails",
+            let res = await fetch("/api/course/editDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -123,12 +123,7 @@ function AddCourseForm()
             console.log(err);
         }
     }
-    // const top100Films = [
-    //     { title: 'The Shawshank Redemption', year: 1994 },
-    //     { title: 'The Godfather', year: 1972 },
-    //     { title: 'The Godfather: Part II', year: 1974 },
-    //     { title: 'The Dark Knight', year: 2008 },
-    // ]
+
     var userList = []
     const [allUsers,setAllUsers] = useState([])
     useEffect(()=>{
@@ -175,10 +170,12 @@ function AddCourseForm()
                             <TextField
                                 id="courseName"
                                 label="Course Name"
+                                value={form_data.courseName}
                                 name="courseName"
                                 size="small"
                                 sx={{ width: '100%' }}
                                 onChange={updateFormData}
+                                disabled={true}
                                 required
                             />
                         </Stack>
@@ -191,7 +188,7 @@ function AddCourseForm()
                                     id="mode"
                                     label="Mode"
                                     name="mode"
-                                    
+                                    value={form_data.mode}
                                     onChange={updateFormData}
                                 >
                                     <MenuItem value="public">Public</MenuItem>
@@ -209,6 +206,7 @@ function AddCourseForm()
                                             <DateTimePicker
                                                 label="Start Time"
                                                 name="startTime"
+                                                value={new Date(form_data.startTime)}
                                                 onChange={updateStartTimeData}
                                                 renderInput={(params) => <TextField {...params} />}
                                             />
@@ -218,6 +216,7 @@ function AddCourseForm()
                                             <DateTimePicker
                                                 label="End Time"
                                                 name="endTime"
+                                                value={new Date(form_data.endTime)}
                                                 onChange={updateEndTimeData}
                                                 renderInput={(params) => <TextField {...params} />}
                                             />
@@ -231,6 +230,7 @@ function AddCourseForm()
                                             id="question"
                                             label="No. of Questions"
                                             name="noOfQuestion"
+                                            value={form_data.noOfQuestion}
                                             size="small"
                                             sx={{ width: '100%' }}
                                             onChange={updateFormData}
@@ -243,6 +243,7 @@ function AddCourseForm()
                                             id="duration"
                                             label="Course Duration"
                                             name="duration"
+                                            value={form_data.duration}
                                             size="small"
                                             sx={{ width: '100%' }}
                                             onChange={updateFormData}
@@ -255,6 +256,7 @@ function AddCourseForm()
                                             id="tabSwitch"
                                             label="Tab Switch Limit"
                                             name="tabSwitch"
+                                            value={form_data.tabSwitch}
                                             size="small"
                                             sx={{ width: '100%' }}
                                             onChange={updateFormData}
@@ -269,6 +271,7 @@ function AddCourseForm()
                                                 labelId="webcam"
                                                 id="webcam"
                                                 label="Webcam"
+                                                value={form_data.webcam}
                                                 name="webcam"
                                                 
                                                 onChange={updateFormData}
@@ -285,6 +288,7 @@ function AddCourseForm()
                                             label="Webcam Limit"
                                             name="webcamLimit"
                                             size="small"
+                                            value={form_data.webcamLimit}
                                             sx={{ width: '100%' }}
                                             onChange={updateFormData}
                                             required
@@ -297,7 +301,7 @@ function AddCourseForm()
                                             id="users"
                                             options={allUsers}
                                             disableCloseOnSelect
-                                            // value={userList}
+                                            value={form_data.users}
                                             getOptionLabel={(option) => option.username}
                                             getOptionSelected={(option, value) => option.username === value.username}
                                             renderOption={(props, option, { selected }) => {
@@ -334,12 +338,12 @@ function AddCourseForm()
                     
                     <br />
                     <div style={{ textAlign: 'right', marginRight: '1%' }}>
-                    {
-                        (alertState.state)&&
-                        <Alert severity={alertState.type}>{alertState.message}</Alert>
-                    }
-                    
-                    <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Add</span></LoadingButton>
+                        {
+                            (alertState.state)&&
+                            <Alert severity={alertState.type}>{alertState.message}</Alert>
+                        }
+                        
+                        <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Edit</span></LoadingButton>
                         
                     </div>
                 </div>
@@ -353,4 +357,4 @@ function AddCourseForm()
 }
 
 
-export default AddCourseForm;
+export default EditCourseForm;

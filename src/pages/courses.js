@@ -46,11 +46,25 @@ function CoursePage()
         state:false,
         data:null
     });
+    const [testStatus,setTestStatus] = useState(false)
     const openTakeTestModal = (data) => {
-        setTakeTestModalState({
-            state:true,
-            data:data
-        });
+        var startTime=new Date(data.startTime)
+        var endTime=new Date(data.endTime)
+        var currentTime=new Date()
+        if(data.mode=="public" || (startTime<=currentTime) && (endTime>=currentTime))
+        {
+            setTakeTestModalState({
+                state:true,
+                data:data
+            });
+        }
+        else
+        {
+            setTestStatus(true)
+            setTimeout(()=>{
+                setTestStatus(false)
+            },3000)
+        }
     }
     const closeTakeTestModal = () => {
         setTakeTestModalState({
@@ -88,7 +102,6 @@ function CoursePage()
                     if (res.status === 200) {
                         setCourseDetails(resJson)
                         setLoginStatus(true)
-                        console.log(resJson)
                     }
                     else
                     {
@@ -114,7 +127,7 @@ function CoursePage()
         
         
     },[])
-
+    const [username,setUsername] = useState(decryptData(localStorage.getItem("utils"))["username"])
     return(
         <div>
             {
@@ -141,55 +154,87 @@ function CoursePage()
                                         <Container className='text-center'>Courses not available</Container>
                                     :
                                     courseDetails.map((data,index)=> (
-                                        <Grid key={index} item xs={12} sm={4}>
-                                            <Card sx={{ maxWidth: "100%"}} elevation={3}>
-                                                <CardMedia
-                                                    sx={{ height: 140 }}
-                                                    image={CourseImg}
-                                                    title={data.courseName}
-                                                />
-                                                <CardContent>
-                                                    <Typography gutterBottom variant="h5" component="div">
-                                                    {data.courseName}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Duration: {data.duration} minutes
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Question: {data.noOfQuestion}
-                                                    </Typography>
-                                                    {
-                                                        (data.mode=="private") &&
-                                                        <div>
+                                        <React.Fragment>
+                                        {
+                                            (data.mode=="public" || (JSON.stringify(data.users).includes(username) || data.createdBy==username))&&
+                                                <Grid key={index} item xs={12} sm={4}>
+                                                    <Card sx={{ maxWidth: "100%"}} elevation={3}>
+                                                        <CardMedia
+                                                            sx={{ height: 140 }}
+                                                            image={CourseImg}
+                                                            title={data.courseName}
+                                                        />
+                                                        <CardContent>
+                                                            
+                                                            <Stack direction="row" justifyContent="space-between">
+                                                                <Typography gutterBottom variant="h5" component="div">
+                                                                    {data.courseName}
+                                                                </Typography>
+                                                                {
+                                                                    (data.mode=="private" && testStatus)&&
+                                                                        <div className='text-center text-red'>
+                                                                            <small>Test not started or Expired</small>
+                                                                        </div>
+                                                                }
+                                                            </Stack>
+                                                            
+                                                            
                                                             <Typography variant="body2" color="text.secondary">
-                                                                Starts on {new Date(data.startTime).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}
+                                                                Duration: {data.duration} minutes
                                                             </Typography>
                                                             <Typography variant="body2" color="text.secondary">
-                                                                Ends on {new Date(data.endTime).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}
+                                                                Question: {data.noOfQuestion}
                                                             </Typography>
-                                                        </div>
-                                                        ||
-                                                        <div>
-                                                            <Typography variant="body2" color="text.secondary">
-                                                                Available all time
-                                                            </Typography>
-                                                            <Typography variant="body2" color="text.secondary">
+                                                            {
+                                                                (data.mode=="private") &&
+                                                                <div>
+                                                                    <Typography variant="body2" color="text.secondary">
+                                                                        Starts on {new Date(data.startTime).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="text.secondary">
+                                                                        Ends on {new Date(data.endTime).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}
+                                                                    </Typography>
+                                                                </div>
+                                                                ||
+                                                                <div>
+                                                                    <Typography variant="body2" color="text.secondary">
+                                                                        Available all time
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="text.secondary">
+                                                                        &nbsp;
+                                                                    </Typography>
+                                                                </div>
+                                                                
+                                                            }
+                                                            
+                                                            
+                                                            <br/>
+                                                            <Stack direction="row" justifyContent="center">
+                                                                {
+                                                                    (data.startedOn=='' && data.submittedOn=='')?
+                                                                        
+                                                                        <Button variant='contained' color="success" size="small" onClick={()=>openTakeTestModal(data)}>Take Test</Button>
+                                                                    :
+                                                                        <Button variant='contained' color="warning" size="small" onClick={()=>openTakeTestModal(data)}>Resume Test</Button>
+                                                                }
                                                                 &nbsp;
-                                                            </Typography>
-                                                        </div>
-                                                        
-                                                    }
-                                                    
-                                                    
-                                                    <br/>
-                                                    <Stack direction="row" justifyContent="right">
-                                                        <Button variant='outlined' size="small" onClick={()=>openTakeTestModal(data)}>Take Test</Button>
-                                                    </Stack>
-                                                </CardContent>
-                                                    
-                                            </Card>
-                                        </Grid>
-                                        
+                                                                {
+                                                                    (data.mode=="private")?
+                                                                        (data.submittedOn!='')&&
+                                                                            
+                                                                            <Button variant='outlined' size="small">View Report</Button>
+                                                                        
+                                                                    :
+                                                                        <Button variant='outlined' size="small">View Report</Button>
+                                                                }
+                                                            </Stack>
+                                                            
+                                                        </CardContent>
+                                                            
+                                                    </Card>
+                                                </Grid>
+                                        }
+                                        </React.Fragment>
                                     ))
                                 }
                                 </Grid>
