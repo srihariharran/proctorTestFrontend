@@ -222,10 +222,10 @@ function CoursePage()
                                                                     (data.mode=="private")?
                                                                         (data.submittedOn!='')&&
                                                                             
-                                                                            <Button variant='outlined' size="small">View Report</Button>
+                                                                            <Button variant='outlined' size="small" type="button" onClick={()=>handleRoutes('/test-report')}>View Report</Button>
                                                                         
                                                                     :
-                                                                        <Button variant='outlined' size="small">View Report</Button>
+                                                                        <Button variant='outlined' size="small" type="button" onClick={()=>handleRoutes('/test/report/details',{state:{courseId:data.courseId,courseName:data.courseName}})}>View Report</Button>
                                                                 }
                                                             </Stack>
                                                             

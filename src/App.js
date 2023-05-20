@@ -9,6 +9,8 @@ import TestInstructionsPage from './pages/testInstructions';
 import TestPage from './pages/test';
 import NewUserPage from './pages/newUser';
 import ForgotPasswordPage from './pages/forgotPassword';
+import TestReportDetailsPage from './pages/testReportDetails';
+import TestReportPage from './pages/testReport';
 
 // App Function
 function App() {
@@ -48,7 +50,8 @@ function App() {
             <Route exact path="/course/test" element={<TestPage />} />
             <Route exact path="/contribute" element={<ContributePage />} />
             <Route exact path="/contribute/questions" element={<ContributeQuestionsPage />} />
-
+            <Route exact path="/test/report/details" element={<TestReportDetailsPage />} />
+            <Route exact path="/test/report" element={<TestReportPage />} />
         </Routes>
     </BrowserRouter>
   );
