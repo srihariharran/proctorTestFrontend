@@ -34,7 +34,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 
 
 // Test Report Function
-function TestReportPage()
+function ContributeTestReportPage()
 {
 
     // Getting from location
@@ -192,6 +192,16 @@ function TestReportPage()
                                 </div>
                                 <Divider />
                                 <br/>
+                                <div>
+                                    <h5>
+                                        Name: {data.name}
+                                    </h5>
+                                    <br/>
+                                    <h5>
+                                        Email: {data.email}
+                                    </h5>
+                                </div>
+                                <br/>
                                 <Grid container>
                                     <Grid item xs={6}>
                                         <div>
@@ -251,38 +261,37 @@ function TestReportPage()
                                     </TableContainer>
                                 </Grid>
                                 <br/>
-                                {
-                                    (reportDetails.mode!="private")&&
-                                    <Grid container >
-                                        <Grid item xs={12}>
-                                            <Accordion>
-                                                <AccordionSummary
-                                                expandIcon={<ExpandMoreIcon />}
-                                                aria-controls="suspicious-activity"
-                                                id="suspicious-activity-head"
-                                                >
-                                                    <Typography>Suspicious Activity</Typography>
-                                                </AccordionSummary>
-                                                <AccordionDetails>
-                                                    <Typography>
-                                                        <Stack direction="row" spacing={1}> 
-                                                            <Chip label={"Tab Switch Count: "+reportDetails.tabSwitchCount} variant="outlined" />
-                                                            <Chip label={"Webcam Count: "+reportDetails.webcamCount} variant="outlined" />
-                                                        </Stack>
-                                                        <br/>
-                                                        <Stack direction="row" spacing={1} justifyContent="center" useFlexGap flexWrap="wrap"> 
-                                                            {
-                                                                (reportDetails.doubtImages).map((data,index)=> (
-                                                                    <img src={data} />
-                                                                ))
-                                                            }
-                                                        </Stack>
-                                                    </Typography>
-                                                </AccordionDetails>
-                                            </Accordion>
-                                        </Grid>
+                               
+                                <Grid container >
+                                    <Grid item xs={12}>
+                                        <Accordion>
+                                            <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                            aria-controls="suspicious-activity"
+                                            id="suspicious-activity-head"
+                                            >
+                                                <Typography>Suspicious Activity</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Typography>
+                                                    <Stack direction="row" spacing={1}> 
+                                                        <Chip label={"Tab Switch Count: "+reportDetails.tabSwitchCount} variant="outlined" />
+                                                        <Chip label={"Webcam Count: "+reportDetails.webcamCount} variant="outlined" />
+                                                    </Stack>
+                                                    <br/>
+                                                    <Stack direction="row" spacing={1} justifyContent="center" useFlexGap flexWrap="wrap"> 
+                                                        {
+                                                            (reportDetails.doubtImages).map((data,index)=> (
+                                                                <img src={data} />
+                                                            ))
+                                                        }
+                                                    </Stack>
+                                                </Typography>
+                                            </AccordionDetails>
+                                        </Accordion>
                                     </Grid>
-                                }
+                                </Grid>
+                            
                                 
                                 <br/>
                                 <Grid container>
@@ -332,4 +341,4 @@ function TestReportPage()
 }
 
 
-export default TestReportPage;
+export default ContributeTestReportPage;

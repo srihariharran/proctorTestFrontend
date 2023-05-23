@@ -100,6 +100,7 @@ function CoursePage()
                     });
                     let resJson = await res.json();
                     if (res.status === 200) {
+                        console.log(resJson)
                         setCourseDetails(resJson)
                         setLoginStatus(true)
                     }
@@ -180,7 +181,7 @@ function CoursePage()
                                                             
                                                             
                                                             <Typography variant="body2" color="text.secondary">
-                                                                Duration: {data.duration} minutes
+                                                                Duration: {data.duration} minutes 
                                                             </Typography>
                                                             <Typography variant="body2" color="text.secondary">
                                                                 Question: {data.noOfQuestion}
@@ -211,21 +212,25 @@ function CoursePage()
                                                             <br/>
                                                             <Stack direction="row" justifyContent="center">
                                                                 {
-                                                                    (data.startedOn=='' && data.submittedOn=='')?
+                                                                    (data.startedOn==null && data.submittedOn==null)?
                                                                         
                                                                         <Button variant='contained' color="success" size="small" onClick={()=>openTakeTestModal(data)}>Take Test</Button>
                                                                     :
-                                                                        <Button variant='contained' color="warning" size="small" onClick={()=>openTakeTestModal(data)}>Resume Test</Button>
+                                                                        (data.submittedOn==null)?
+                                                                            <Button variant='contained' color="warning" size="small" onClick={()=>openTakeTestModal(data)}>Resume Test</Button>
+                                                                        :
+                                                                            (data.mode=="public")&&
+                                                                                <Button variant='contained' color="success" size="small" onClick={()=>openTakeTestModal(data)}>Take Test</Button>
                                                                 }
                                                                 &nbsp;
                                                                 {
                                                                     (data.mode=="private")?
-                                                                        (data.submittedOn!='')&&
+                                                                        (data.submittedOn!=null)&&
                                                                             
-                                                                            <Button variant='outlined' size="small" type="button" onClick={()=>handleRoutes('/test-report')}>View Report</Button>
+                                                                            <Button variant='outlined' size="small" type="button" onClick={()=>handleRoutes('/test/report',{state:{"courseId":data.courseId,"coursename":data.courseName,"reportId":data.reportId}})}>Report</Button>
                                                                         
                                                                     :
-                                                                        <Button variant='outlined' size="small" type="button" onClick={()=>handleRoutes('/test/report/details',{state:{courseId:data.courseId,courseName:data.courseName}})}>View Report</Button>
+                                                                        <Button variant='outlined' size="small" type="button" onClick={()=>handleRoutes('/test/report/details',{state:{courseId:data.courseId,courseName:data.courseName}})}>Report</Button>
                                                                 }
                                                             </Stack>
                                                             

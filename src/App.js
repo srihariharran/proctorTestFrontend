@@ -11,6 +11,8 @@ import NewUserPage from './pages/newUser';
 import ForgotPasswordPage from './pages/forgotPassword';
 import TestReportDetailsPage from './pages/testReportDetails';
 import TestReportPage from './pages/testReport';
+import ContributeTestReportDetailsPage from './pages/contributeTestReportDetails';
+import ContributeTestReportPage from './pages/contributeTestReport';
 
 // App Function
 function App() {
@@ -52,6 +54,8 @@ function App() {
             <Route exact path="/contribute/questions" element={<ContributeQuestionsPage />} />
             <Route exact path="/test/report/details" element={<TestReportDetailsPage />} />
             <Route exact path="/test/report" element={<TestReportPage />} />
+            <Route exact path="/contribute/reports" element={<ContributeTestReportDetailsPage />} />
+            <Route exact path="/contribute/test/report" element={<ContributeTestReportPage />} />
         </Routes>
     </BrowserRouter>
   );

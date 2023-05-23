@@ -69,6 +69,7 @@ function TestPage()
 
     // Function to Open or Close Start Test Modal
     const [startTestModalState, setStartTestModalState] = useState(true);
+    const [autoSubmitTestModalState, setAutoSubmitTestModalState] = useState(false);
 
     // // Function to Open or Close End Test Modal
     const [endTestModalState, setEndTestModalState] = useState(false);
@@ -162,6 +163,7 @@ function TestPage()
         setForm_data((form_data)=>({...form_data,["tabSwitchCount"]:tabSwitchCount}))
         if(tabSwitchCount==courseDetails.tabSwitchLimit)
         {
+            setAutoSubmitTestModalState(true)
             submitData()
         }
     },[tabSwitchCount])
@@ -170,7 +172,8 @@ function TestPage()
         
         if(webcamCount==courseDetails.webcamLimit)
         {
-         submitData()
+            setAutoSubmitTestModalState(true)
+            submitData()
         }
      },[webcamCount])
     
@@ -268,8 +271,15 @@ function TestPage()
     const submitData = async(event) =>
     {
         setForm_data((form_data)=>({...form_data,["courseId"]:courseDetails.courseId}))
-        console.log(form_data)
-        event.preventDefault()
+        // console.log(form_data)
+        try
+        {
+            event.preventDefault()
+        }
+        catch (err)
+        {
+            
+        }
         setBtnLoad(true)
         try 
         {
@@ -703,7 +713,7 @@ function TestPage()
                                 </p>
                             </small>
                             <Stack direction="row">
-                                <TextField name="endTest" variant="outlined" label="End Test" size="small" onInput={checkEndTestData} fullWidth />
+                                <TextField name="endTest" variant="outlined" label="End Test" size="small" onInput={checkEndTestData} autoComplete='off' fullWidth />
                             </Stack>
                             <br/>
                             <Stack direction="row" justifyContent="center">
@@ -718,6 +728,31 @@ function TestPage()
                                     End Test
                                 </Button> */}
                             </Stack>
+                        </Box>
+                    
+                    </Modal>
+
+                    <Modal
+                        open={autoSubmitTestModalState}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                        sx={{backgroundColor:'rgba(0,0,0,0.95)'}}
+                    >
+                        <Box sx={modalStyle}>
+                            <ol>
+                                <li>Your tab switch or webcam limit reached</li>
+                                <li>Submitting the test details</li>
+                            </ol>
+                            <br/>
+                            <br/>
+                            <Stack direction="row" justifyContent="center">
+                                <LoadingButton loading={true}  variant="contained" color="error" disabled={true}><span>End Test</span></LoadingButton>
+                            </Stack>
+                            {
+                                (alertState.state)&&
+                                <Alert severity={alertState.type}>{alertState.message}</Alert>
+                            }
+
                         </Box>
                     
                     </Modal>

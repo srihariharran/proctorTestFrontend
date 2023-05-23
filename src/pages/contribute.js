@@ -287,10 +287,21 @@ function ContributePage()
                                                                 
                                                                 <Typography variant="body2" color="text.secondary">
                                                                     <small>Credits {data.createdBy}</small>
-                                                                </Typography>                                            
-                                                                <Stack direction="row" justifyContent="right">
+                                                                </Typography>          
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                    <small>{data.testTaken} users taken this course</small>
+                                                                </Typography>                       
+                                                                <br/>                     
+                                                                <Stack direction="row" justifyContent="center" spacing={1}>
+                                                                    <Button variant="outlined" size="small" className='text-main border-main' onClick={()=>handleRoutes("/contribute/questions",{state:{courseId:data.courseId,courseName:data.courseName}})}>Questions</Button>
                                                                     
-                                                                    <Button variant="outlined" size="small" className='text-main border-main' onClick={()=>handleRoutes("/contribute/questions",{state:{courseId:data.courseId,courseName:data.courseName}})}>View</Button>
+                                                                    {
+                                                                        (data.mode=="private")&&
+                                                                        
+                                                                            <Button variant="outlined" size="small" className='text-main border-main' onClick={()=>handleRoutes("/contribute/reports",{state:{courseId:data.courseId,courseName:data.courseName}})}>Reports</Button>
+                                                                    }
+                                                                    
+                                                                    
                                                                 </Stack>
                                                             </CardContent>
                                                                 

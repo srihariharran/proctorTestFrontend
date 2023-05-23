@@ -19,7 +19,7 @@ import { Button } from '@mui/material';
 
 
 // Test Report Function
-function TestReportDetailsPage()
+function ContributeTestReportDetailsPage()
 {
 
     // Getting from location
@@ -63,7 +63,7 @@ function TestReportDetailsPage()
                 
                 try 
                 {
-                    let res = await fetch("/api/test/report/all/getDetails",
+                    let res = await fetch("/api/contribute/report/getDetails",
                     {
                         crossDomain: true,
                         headers: { 
@@ -118,7 +118,7 @@ function TestReportDetailsPage()
                         <Grid item xs={12}>
                             <Container maxWidth="lg">
                                 <div style={{width:"100%"}}>
-                                    <h2 className="text-center">{cdata.courseName} Test Report Details</h2>
+                                    <h2 className="text-center">{cdata.courseName} Report Details</h2>
                                 </div>
                                 <Divider />
                                 <br/>
@@ -133,6 +133,7 @@ function TestReportDetailsPage()
                                         <Table sx={{ minWidth: 650 }} aria-label="simple table">
                                             <TableHead>
                                                 <TableRow>
+                                                    <TableCell>Name</TableCell>
                                                     <TableCell>Started On</TableCell>
                                                     <TableCell>Submitted On</TableCell>
                                                     <TableCell>No. of Questions</TableCell>
@@ -150,6 +151,7 @@ function TestReportDetailsPage()
                                                         key={index}
                                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                         >
+                                                            <TableCell>{data.name}</TableCell>
                                                             <TableCell>
                                                                 {new Date(data.startedOn).toLocaleString()}
                                                             </TableCell>
@@ -159,7 +161,7 @@ function TestReportDetailsPage()
                                                             <TableCell>{data.webcam}</TableCell>
                                                             <TableCell>{data.score}</TableCell>
                                                             <TableCell>
-                                                                <Button variant='outlined' type="button" onClick={()=>handleRoutes('/test/report',{state:{"courseId":cdata.courseId,"coursename":cdata.courseName,"reportId":data.reportId}})}>
+                                                                <Button variant='outlined' type="button" onClick={()=>handleRoutes('/contribute/test/report',{state:{"courseId":cdata.courseId,"coursename":cdata.courseName,"reportId":data.reportId,"name":data.name,"email":data.email}})}>
                                                                     View
                                                                 </Button>
                                                             </TableCell>
@@ -187,4 +189,4 @@ function TestReportDetailsPage()
 }
 
 
-export default TestReportDetailsPage;
+export default ContributeTestReportDetailsPage;

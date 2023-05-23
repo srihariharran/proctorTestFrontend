@@ -21,7 +21,7 @@ import { decryptData } from './functions/crypto';
 // Take Test Settings Page Function
 function TakeTestSettings(props)
 {
-    console.log(props)
+    // console.log(props)
     let navigate = useNavigate(); 
     const handleRoutes = (path,state) => {
         navigate(path,state)
@@ -139,11 +139,7 @@ function TakeTestSettings(props)
             {
                 setBtnLoad(true)
                 
-                if(props.data.reportId=="")
-                {
-                    startTest()
-                }
-                else
+                if(props.data.startedOn!=null && props.data.submittedOn==null)
                 {
                     setAlertState({
                         state:true,
@@ -154,6 +150,11 @@ function TakeTestSettings(props)
                         fullScreen()
                         handleRoutes("/course/test-instructions",{state:{form_data},replace:true});
                     },2000)
+                    
+                }
+                else
+                {
+                    startTest()
                 }
                 
             }
@@ -177,11 +178,7 @@ function TakeTestSettings(props)
         else
         {
             setBtnLoad(true)
-            if(props.data.reportId=="")
-            {
-                startTest()
-            }
-            else
+            if(props.data.startedOn!=null && props.data.submittedOn==null)
             {
                 setAlertState({
                     state:true,
@@ -192,6 +189,11 @@ function TakeTestSettings(props)
                     fullScreen()
                     handleRoutes("/course/test-instructions",{state:{form_data},replace:true});
                 },2000)
+                
+            }
+            else
+            {
+                startTest()
             }
             
         }
@@ -205,12 +207,13 @@ function TakeTestSettings(props)
     },[imgSrc])
 
     useEffect(()=>{
-        if(props.data.reportId!='')
-        {
-            setDisableField(true)
-        }
+         // Getting Ip Address and Platform
+                        
+         if(props.data.startedOn!=null && props.data.submittedOn==null)
+         {
+             setDisableField(true)
+         }
         (async () => {
-            // Getting Ip Address and Platform
             try 
             {
                 let res = await fetch("https://api.ipify.org/?format=json",
@@ -230,10 +233,16 @@ function TakeTestSettings(props)
             catch (err) {
                 console.log(err);
             }
+
+           
         })();
         
         
     },[])
+    useEffect(()=>{
+        console.log(form_data)
+       
+    },[form_data])
     return(
         <div>
             <form autoComplete="off" onSubmit={submitData}>
