@@ -143,7 +143,7 @@ function CoursePage()
                         <Grid item xs={12}>
                             <Container maxWidth="lg">
                                 <div style={{width:"100%"}}>
-                                    <h2 className="text-center">Courses</h2>
+                                    <h2 className="text-left">Courses</h2>
                                 </div>
                                 <Divider />
                                 <br/>
@@ -157,7 +157,7 @@ function CoursePage()
                                     courseDetails.map((data,index)=> (
                                         <React.Fragment>
                                         {
-                                            (data.mode=="public" || (JSON.stringify(data.users).includes(username) || data.createdBy==username))&&
+                                            ((data.mode=="public" || (JSON.stringify(data.users).includes(username) || data.createdBy==username))&&(data.noOfQuestion<=data.totalNoOfQuestion))&&
                                                 <Grid key={index} item xs={12} sm={4}>
                                                     <Card sx={{ maxWidth: "100%"}} elevation={3}>
                                                         <CardMedia

@@ -270,7 +270,11 @@ function ContributePage()
                                                                     {
                                                                         (username==data.createdBy)&&
                                                                         <div >
-                                                                            <EditIcon onClick={()=>openEditCourseModal(data)} title="Edit "  sx={{fontSize:"18px",color:"#b38f00",cursor:"pointer"}}/>
+                                                                            {
+                                                                                (data.mode=="private")&&
+                                                                                    <EditIcon onClick={()=>openEditCourseModal(data)} title="Edit "  sx={{fontSize:"18px",color:"#b38f00",cursor:"pointer"}}/>
+                                                                            }
+                                                                            
                                                                             <DeleteIcon onClick={()=>openDeleteCourseModal(data)} title="Delete" sx={{fontSize:"18px",color:"#b30000",cursor:"pointer"}}/>
                                                                         </div>
             

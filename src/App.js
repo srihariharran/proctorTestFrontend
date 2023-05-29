@@ -13,6 +13,7 @@ import TestReportDetailsPage from './pages/testReportDetails';
 import TestReportPage from './pages/testReport';
 import ContributeTestReportDetailsPage from './pages/contributeTestReportDetails';
 import ContributeTestReportPage from './pages/contributeTestReport';
+import ProfilePage from './pages/profile';
 
 // App Function
 function App() {
@@ -45,6 +46,7 @@ function App() {
     <BrowserRouter>
         <Routes>
             <Route exact path="/" element={<LoginPage />} />
+            <Route exact path="/profile" element={<ProfilePage />} />
             <Route exact path="/user-registration" element={<NewUserPage />} />
             <Route exact path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route exact path="/courses" element={<CoursePage />} />

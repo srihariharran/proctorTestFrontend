@@ -24,7 +24,7 @@ import Logo from '../static/images/logo-full.png'
 import { decryptData } from '../functions/crypto';
 
 const drawerWidth = 240;
-const navItems = ["courses","contribute","settings"];
+const navItems = ["courses","contribute"];
 
 function Navbar()
 {
@@ -162,7 +162,7 @@ function Navbar()
                                     horizontal: 'right',
                                 }}
                             >
-                                <MenuItem >Profile</MenuItem>
+                                <MenuItem onClick={()=>handleRoutes('/profile')}>Profile</MenuItem>
                                 <MenuItem onClick={logout}>Logout</MenuItem>
                             </Menu>
                         </Button>
