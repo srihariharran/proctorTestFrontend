@@ -14,6 +14,8 @@ import TestReportPage from './pages/testReport';
 import ContributeTestReportDetailsPage from './pages/contributeTestReportDetails';
 import ContributeTestReportPage from './pages/contributeTestReport';
 import ProfilePage from './pages/profile';
+import TwoFactorAuthPage from './pages/twoFactorAuth';
+import ResetPasswordPage from './pages/resetPassword';
 
 // App Function
 function App() {
@@ -46,9 +48,11 @@ function App() {
     <BrowserRouter>
         <Routes>
             <Route exact path="/" element={<LoginPage />} />
+            <Route exact path="/two-factor-authentication" element={<TwoFactorAuthPage />} />
             <Route exact path="/profile" element={<ProfilePage />} />
             <Route exact path="/user-registration" element={<NewUserPage />} />
             <Route exact path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route exact path="/reset-password" element={<ResetPasswordPage />} />
             <Route exact path="/courses" element={<CoursePage />} />
             <Route exact path="/course/test-instructions" element={<TestInstructionsPage />} />
             <Route exact path="/course/test" element={<TestPage />} />

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import './static/css/style.css'
 import 'bootstrap/dist/css/bootstrap.min.css';  
 import Logo from './static/images/logo-full.png'
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -14,13 +14,19 @@ import Alert from '@mui/material/Alert';
 import { useEffect } from 'react';
 import { encryptData } from './functions/crypto';
 
-// Login Page Function
-function LoginPage()
+// ResetPassword Page Function
+function ResetPasswordPage()
 {
+    // Getting from location
+    const location = useLocation()
+    
+    
+
     let navigate = useNavigate(); 
     const handleRoutes = (path) => {
         navigate(path, { replace: true })
     }
+
 
     const [form_data,setForm_data] = useState({})
     // Function to update user details
@@ -34,13 +40,34 @@ function LoginPage()
         type:"",
         message:""
     })
+    const [passwordState,setPasswordState] = useState({
+        state:false,
+        text:''
+    })
+    useEffect(()=>{
+        if(form_data.password!=form_data.confirm_password)
+        {
+            setPasswordState({
+                state:true,
+                text:"Password not same"
+            })
+        }
+        else
+        {
+            setPasswordState({
+                state:false,
+                text:""
+            })
+        }
+    },[form_data])
+
      // Function to login
     const submitLoginFormData = async(event) => {
         event.preventDefault()
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/login",
+            let res = await fetch("/api/resetPassword",
             {
                 crossDomain: true,
                 headers: { 'Content-Type': 'application/json' },
@@ -55,23 +82,55 @@ function LoginPage()
                 })
                 if(resJson['status'])
                 {
-                    if(resJson['otpStatus'])
-                    {
-                        navigate('/two-factor-authentication',{replace:true,state:{username:form_data.username,maskedEmail:resJson['otpMaskedEmail']}})
-                        setAlertState((alert)=>({...alert,["type"]:"success"}))
-                    }
-                    else
-                    {
-                        localStorage.setItem("utils",encryptData(resJson["details"]))
-                        handleRoutes('/courses')
-                        setAlertState((alert)=>({...alert,["type"]:"success"}))
-                    }
-                    
+                   
+                    setAlertState((alert)=>({...alert,["type"]:"success"}))
                 }
                 else
                 {
                     document.getElementById("form").reset();
                     setBtnLoad(false)
+                    setAlertState((alert)=>({...alert,["type"]:"error"}))
+                }
+                setTimeout(()=>{
+                    handleRoutes('/')
+                    setAlertState({
+                        state:false,
+                        type:"",
+                        message:""
+                    })
+                },5000)
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+    const resendOTP = async(event) => {
+        event.preventDefault()
+        try 
+        {
+            let res = await fetch("/api/resendOTP",
+            {
+                crossDomain: true,
+                headers: { 'Content-Type': 'application/json' },
+                method: "POST",
+                body: JSON.stringify({
+                    username:form_data.username
+                })
+            });
+            let resJson = await res.json();
+            if (res.status === 200) {
+                setAlertState({
+                    state:true,
+                    message:resJson["message"]
+                })
+                if(resJson['status'])
+                {
+                   
+                    setAlertState((alert)=>({...alert,["type"]:"success"}))
+                }
+                else
+                {
                     setAlertState((alert)=>({...alert,["type"]:"error"}))
                 }
                 setTimeout(()=>{
@@ -86,12 +145,23 @@ function LoginPage()
         catch (err) {
             console.log(err);
         }
-    }
-
+    } 
     useEffect(()=>{
         if(localStorage.getItem("token"))
         {
             handleRoutes("/courses")
+        }
+        else
+        {
+            if(location.state)
+            {
+                setForm_data((form_data)=>({...form_data,["username"]:location.state.username}))
+                setForm_data((form_data)=>({...form_data,["maskedEmail"]:location.state.maskedEmail}))
+            }
+            else
+            {
+                handleRoutes('/')
+            }
         }
     },[])
 
@@ -114,32 +184,38 @@ function LoginPage()
                                     {/* Login Form */}
                                     <div className="pt-3 pb-5 p-3">
                                         <h4 className="text-center text-main ">
-                                            <strong>User Login</strong>
+                                            <strong>Two Factor Authentication</strong>
                                         </h4>
+                                        <h5 className="text-center text-main ">
+                                            <strong>OTP Verification</strong>
+                                        </h5>
+                                        <p className="text-center">
+                                           <small>OTP sent to your Email {form_data.maskedEmail}</small>
+                                        </p>
+                                        
                                         <br/>
                                         <form autoComplete='off' id="form" onSubmit={submitLoginFormData}>
                                             <div>
-                                                <TextField variant='outlined' onChange={updateFormData} label="Username" type="email" name="username" size="small" required fullWidth/>  
+                                                <TextField variant='outlined' onChange={updateFormData} label="One Time Password" type="text" name="otp" size="small" required fullWidth/>  
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField variant='outlined' onChange={updateFormData} label="Password" type="password" name="password" size="small" required fullWidth/> 
-                                                <div className='text-right'>
-                                                    <Button>
-                                                        <small onClick={()=>handleRoutes("/forgot-password")}>Forgot Password?</small>
-                                                    </Button>
-                                                </div>
+                                                <TextField error={passwordState.state}  onChange={updateFormData} variant='outlined' label="Password" type="password" name="password" size="small" required fullWidth/> 
+                                            </div>
+                                            <br/>
+                                            <div>
+                                                <TextField error={passwordState.state} helperText={passwordState.text} onChange={updateFormData} variant='outlined' label="Confirm Password" type="password" name="confirm_password" size="small" required fullWidth/>   
                                             </div>
                                             <br/>
                                             
                                             <Stack direction="row" justifyContent="space-between">
-                                                <Button className="text-main" onClick={()=>handleRoutes("/user-registration")}>New User</Button>
+                                                <Button variant='outlined' type="button" onClick={resendOTP}>Resend OTP</Button>
                                                 {
                                                     (alertState.state)&&
                                                     <Alert severity={alertState.type}>{alertState.message}</Alert>
                                                 }
                                                 
-                                                <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Login</span></LoadingButton>
+                                                <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Reset Password</span></LoadingButton>
                                             </Stack>
                                         </form>
                                     </div>
@@ -154,4 +230,4 @@ function LoginPage()
 }
 
 
-export default LoginPage;
+export default ResetPasswordPage;

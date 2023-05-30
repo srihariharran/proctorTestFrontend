@@ -11,7 +11,7 @@ import Grid from '@mui/material/Grid';
 import { useNavigate } from "react-router-dom";
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+import Switch from '@mui/material/Switch';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { useEffect } from 'react';
@@ -30,7 +30,14 @@ function ProfilePage()
     // Function to update user details
     const updateFormData = (event) => {
         const {name,value} = event.target
-        setForm_data((form_data) => ({ ...form_data, [name]: value }))
+        if(name=="twoFactorAuth")
+        {   
+            setForm_data((form_data) => ({ ...form_data, [name]: event.target.checked})) 
+        }
+        else
+        {
+            setForm_data((form_data) => ({ ...form_data, [name]: value }))
+        }
     }
     const [btnLoad,setBtnLoad] = useState(false)
     const [alertState,setAlertState] = useState({
@@ -218,6 +225,18 @@ function ProfilePage()
                                         </h4>
                                         <br/>
                                         <form id="userRegisterForm" autoComplete='off' onSubmit={submitUpdateFormData}>
+                                            <Stack direction="row" justifyContent="space-between">
+                                                <div style={{paddingTop:'1%'}}>
+                                                    <b>
+                                                    Two Factor Authentication
+                                                    </b>
+                                                </div>
+                                                
+                                                <div>
+                                                    <Switch checked={form_data["twoFactorAuth"]} name="twoFactorAuth" onChange={updateFormData} />
+                                                </div>
+                                            </Stack>
+                                            <br/>
                                             <div>
                                                 <TextField onChange={updateFormData} value={form_data.username} disabled="true" variant='outlined' label="Email" type="email" name="username" size="small" required fullWidth/>  
                                             </div>

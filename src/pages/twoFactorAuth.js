@@ -1,24 +1,33 @@
 // Importing Required Packages
 import * as React from 'react';
-import { useState,useEffect } from 'react';
+import { useState } from 'react';
 import './static/css/style.css'
 import 'bootstrap/dist/css/bootstrap.min.css';  
 import Logo from './static/images/logo-full.png'
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
+import { useEffect } from 'react';
+import { encryptData } from './functions/crypto';
 
-// ForgotPassword Page Function
-function ForgotPasswordPage()
+// TwoFactorAuth Page Function
+function TwoFactorAuthPage()
 {
+    // Getting from location
+    const location = useLocation()
+    
+    
+
     let navigate = useNavigate(); 
     const handleRoutes = (path) => {
         navigate(path, { replace: true })
     }
+
+
     const [form_data,setForm_data] = useState({})
     // Function to update user details
     const updateFormData = (event) => {
@@ -31,13 +40,13 @@ function ForgotPasswordPage()
         type:"",
         message:""
     })
-     // Function to reset password
-    const submitFormData = async(event) => {
+     // Function to login
+    const submitLoginFormData = async(event) => {
         event.preventDefault()
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/forgotPassword",
+            let res = await fetch("/api/twoFactorAuth",
             {
                 crossDomain: true,
                 headers: { 'Content-Type': 'application/json' },
@@ -53,10 +62,9 @@ function ForgotPasswordPage()
                 if(resJson['status'])
                 {
                     
-                    navigate('/reset-password',{replace:true,state:{username:form_data.username,maskedEmail:resJson['otpMaskedEmail']}})
+                    localStorage.setItem("utils",encryptData(resJson["details"]))
+                    handleRoutes('/courses')
                     setAlertState((alert)=>({...alert,["type"]:"success"}))
-                 
-                    
                 }
                 else
                 {
@@ -78,17 +86,72 @@ function ForgotPasswordPage()
         }
     }
 
+    // Function to Resend OTP
+    const resendOTP = async(event) => {
+        event.preventDefault()
+        try 
+        {
+            let res = await fetch("/api/resendOTP",
+            {
+                crossDomain: true,
+                headers: { 'Content-Type': 'application/json' },
+                method: "POST",
+                body: JSON.stringify({
+                    username:form_data.username
+                })
+            });
+            let resJson = await res.json();
+            if (res.status === 200) {
+                setAlertState({
+                    state:true,
+                    message:resJson["message"]
+                })
+                if(resJson['status'])
+                {
+                   
+                    setAlertState((alert)=>({...alert,["type"]:"success"}))
+                }
+                else
+                {
+                    setAlertState((alert)=>({...alert,["type"]:"error"}))
+                }
+                setTimeout(()=>{
+                    setAlertState({
+                        state:false,
+                        type:"",
+                        message:""
+                    })
+                },5000)
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
+    } 
+
+    
     useEffect(()=>{
         if(localStorage.getItem("token"))
         {
             handleRoutes("/courses")
         }
+        else
+        {
+            if(location.state)
+            {
+                setForm_data((form_data)=>({...form_data,["username"]:location.state.username}))
+                setForm_data((form_data)=>({...form_data,["maskedEmail"]:location.state.maskedEmail}))
+            }
+            else
+            {
+                handleRoutes('/')
+            }
+        }
     },[])
-
 
     return(
         <div>
-            {/* Forgot Password Box */}
+            {/* Login Box */}
            <div className="login-box-container">
                 <div className="container">
                     <div className="row justify-content-center">
@@ -105,26 +168,33 @@ function ForgotPasswordPage()
                                     {/* Login Form */}
                                     <div className="pt-3 pb-5 p-3">
                                         <h4 className="text-center text-main ">
-                                            <strong>Forgot Password</strong>
+                                            <strong>Two Factor Authentication</strong>
                                         </h4>
+                                        <h5 className="text-center text-main ">
+                                            <strong>OTP Verification</strong>
+                                        </h5>
+                                        <p className="text-center">
+                                           <small>OTP sent to your Email {form_data.maskedEmail}</small>
+                                        </p>
+                                        
                                         <br/>
-                                        <form autoComplete='off' id="form" onSubmit={submitFormData}>
+                                        <form autoComplete='off' id="form" onSubmit={submitLoginFormData}>
                                             <div>
-                                                <TextField variant='outlined' onChange={updateFormData} label="Username" type="email" name="username" size="small" required fullWidth/>  
+                                                <TextField variant='outlined' onChange={updateFormData} label="One Time Password" type="text" name="otp" size="small" required fullWidth/>  
                                             </div>
+                                            
                                             <br/>
                                             
                                             <Stack direction="row" justifyContent="space-between">
-                                                    <Button className="text-main" onClick={()=>handleRoutes("/")}>Login</Button>
-                                                    {
-                                                        (alertState.state)&&
-                                                        <Alert severity={alertState.type}>{alertState.message}</Alert>
-                                                    }
-                                                    
-                                                    <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Reset Password</span></LoadingButton>
+                                                <Button variant='outlined' type="button" onClick={resendOTP}>Resend OTP</Button>
+                                                {
+                                                    (alertState.state)&&
+                                                    <Alert severity={alertState.type}>{alertState.message}</Alert>
+                                                }
+                                                
+                                                <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Login</span></LoadingButton>
                                             </Stack>
                                         </form>
-                                        
                                     </div>
                                 </div>
                             </div>
@@ -137,4 +207,4 @@ function ForgotPasswordPage()
 }
 
 
-export default ForgotPasswordPage;
+export default TwoFactorAuthPage;
