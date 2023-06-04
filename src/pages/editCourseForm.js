@@ -31,6 +31,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { decryptData } from './functions/crypto';
+import utils from '../utils.json'
 
 // For Users Field
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -80,11 +81,11 @@ function EditCourseForm(props)
     // Function to submit form data
     const submitData = async(event) => {
         event.preventDefault()
-        console.log(form_data)
+        // console.log(form_data)
         
         try 
         {
-            let res = await fetch("/api/course/editDetails",
+            let res = await fetch(utils["url"]+"/api/course/editDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -131,7 +132,7 @@ function EditCourseForm(props)
  
             try 
             {
-                let res = await fetch("/api/user/getDetails",
+                let res = await fetch(utils["url"]+"/api/user/getDetails",
                 {
                     crossDomain: true,
                     headers: { 

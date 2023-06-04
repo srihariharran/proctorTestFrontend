@@ -11,6 +11,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
+import utils from '../utils.json'
 
 // ForgotPassword Page Function
 function ForgotPasswordPage()
@@ -37,7 +38,7 @@ function ForgotPasswordPage()
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/forgotPassword",
+            let res = await fetch(utils["url"]+"/api/forgotPassword",
             {
                 crossDomain: true,
                 headers: { 'Content-Type': 'application/json' },

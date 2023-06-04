@@ -16,6 +16,8 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { useEffect } from 'react';
 import { decryptData } from './functions/crypto';
+import CircularProgress from '@mui/material/CircularProgress';
+import utils from '../utils.json'
 
 // Profile Page Function
 function ProfilePage()
@@ -25,7 +27,13 @@ function ProfilePage()
         navigate(path, { replace: true })
     }
     const [form_data,setForm_data] = useState({
-        confirm_password:''
+        confirm_password:'',
+        password:''
+    })
+    const [mobile_state, setMobile_state] = useState({ text: '', state: false })
+    const [passwordValidState,setPasswordValidState] = useState({
+        state:false,
+        text:''
     })
     // Function to update user details
     const updateFormData = (event) => {
@@ -38,6 +46,46 @@ function ProfilePage()
         {
             setForm_data((form_data) => ({ ...form_data, [name]: value }))
         }
+        if(name=="password")
+        {
+            const reg =/^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+            
+            if(!reg.test(value) && value!="password" && value!='')
+            {
+                setPasswordValidState({
+                    state:true,
+                    text:"Must contain at least 1 number and 1 uppercase and lowercase letter, and at least 8 or more characters"
+                })
+            }
+            else
+            {
+                setPasswordValidState({
+                    state:false,
+                    text:""
+                })
+            }
+            
+        }
+        if(name=="mobile")
+        {
+            const reg =/^(\+|\d)[0-9]{7,16}$/;;
+            
+            if(!reg.test(value))
+            {
+                setMobile_state({
+                    state:true,
+                    text:"Invalid Mobile No."
+                })
+            }
+            else
+            {
+                setMobile_state({
+                    state:false,
+                    text:""
+                })
+            }
+            
+        }
     }
     const [btnLoad,setBtnLoad] = useState(false)
     const [alertState,setAlertState] = useState({
@@ -48,12 +96,12 @@ function ProfilePage()
     // Function to register user
     const submitUpdateFormData = async(event) => {
         event.preventDefault()
-        if(!mobile_state.state)
+        if(!mobile_state.state && !passwordState.state && !passwordValidState.state)
         {
             setBtnLoad(true)
             try 
             {
-                let res = await fetch("/api/update/user",
+                let res = await fetch(utils["url"]+"/api/update/user",
                 {
                     crossDomain: true,
                     headers: { 
@@ -95,7 +143,7 @@ function ProfilePage()
         }
     }
     
-    const [mobile_state, setMobile_state] = useState({ text: '', state: false })
+    
 
     // Function to Check Mobile
     const checkMobile = async(event) => {
@@ -104,7 +152,7 @@ function ProfilePage()
         // API Call to Check Mobile
         try 
         {
-          let res = await fetch("/api/checkMobileNoExists",
+          let res = await fetch(utils["url"]+"/api/checkMobileNoExists",
             {
               crossDomain: true,
               headers: { 
@@ -158,7 +206,7 @@ function ProfilePage()
     const getUserDetails = async() => {
         try 
         {
-          let res = await fetch("/api/user/getAllDetails",
+          let res = await fetch(utils["url"]+"/api/user/getAllDetails",
             {
               crossDomain: true,
               headers: { 
@@ -174,7 +222,7 @@ function ProfilePage()
           if (res.status === 200) 
           {
              setForm_data(resJson)
-             console.log(resJson)
+            //  console.log(resJson)
              setForm_data((form_data)=>({...form_data,["confirm_password"]:''}))
              setLoginStatus(true)
           }
@@ -207,83 +255,90 @@ function ProfilePage()
     return(
         <div>
            <div>
-            {
-                (loginStatus) &&
-                <div>
-                    {/* Courses List */}
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                            <Navbar />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Container maxWidth="sm">
-                             
-                                    {/* Login Form */}
-                                    <div className="pt-3 pb-5 p-3">
-                                        <h4 className="text-main ">
-                                            <strong>Profile</strong>
-                                        </h4>
-                                        <br/>
-                                        <form id="userRegisterForm" autoComplete='off' onSubmit={submitUpdateFormData}>
-                                            <Stack direction="row" justifyContent="space-between">
-                                                <div style={{paddingTop:'1%'}}>
-                                                    <b>
-                                                    Two Factor Authentication
-                                                    </b>
-                                                </div>
-                                                
-                                                <div>
-                                                    <Switch checked={form_data["twoFactorAuth"]} name="twoFactorAuth" onChange={updateFormData} />
-                                                </div>
-                                            </Stack>
-                                            <br/>
-                                            <div>
-                                                <TextField onChange={updateFormData} value={form_data.username} disabled="true" variant='outlined' label="Email" type="email" name="username" size="small" required fullWidth/>  
-                                            </div>
-                                            <br/>
-                                            <div>
-                                                <TextField onChange={updateFormData} variant='outlined' value={form_data.name} label="Name" type="text" name="name" size="small" required fullWidth/>  
-                                            </div>
-                                            <br/>
-                                            <div>
-                                                <TextField error={passwordState.state}  onChange={updateFormData} value={form_data.password} variant='outlined' label="Password" type="password" name="password" size="small" required fullWidth/> 
-                                            </div>
-                                            <br/>
-                                            <div>
-                                                <TextField error={passwordState.state} helperText={passwordState.text} onChange={updateFormData} variant='outlined' label="Confirm Password" type="password" name="confirm_password" size="small" fullWidth/>   
-                                            </div>
-                                            <br/>
-                                            <div>
-                                                <TextField onChange={updateFormData} variant='outlined' label="School/College/Company" value={form_data.organisation} type="text" name="organisation" size="small" required fullWidth/>  
-                                            </div>
-                                            <br/>
-                                            <div>
-                                                <TextField onChange={updateFormData} variant='outlined' label="Designation" type="text" value={form_data.designation} name="designation" size="small" required fullWidth/>  
-                                            </div>
-                                            <br/>
-                                            <div>
-                                                <TextField error={mobile_state.state} helperText={mobile_state.text} onChange={updateFormData} value={form_data.mobile} onInput={checkMobile} variant='outlined' label="Mobile" type="text" name="mobile" size="small" required fullWidth/>  
-                                            </div>
-                                            <br/>
-                                            
-                                            <Stack direction="row" justifyContent="right">
-                                                
-                                                {
-                                                    (alertState.state)&&
-                                                    <Alert severity={alertState.type}>{alertState.message}</Alert>
-                                                }
-                                                &nbsp;
-                                                <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Update</span></LoadingButton>
-
-                                            </Stack>
-                                            
-                                        </form>
-                                    </div>
-                            </Container>
-                        </Grid>
+            
+            <div>
+                {/* Courses List */}
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <Navbar />
                     </Grid>
-                </div>
-            }
+                    <Grid item xs={12}>
+                        
+                            <Container maxWidth="sm">
+                                    <h4 className="text-main ">
+                                        <strong>Profile</strong>
+                                    </h4>
+                                    {
+                                        (loginStatus) &&
+                                        
+                                        <div className="pt-3 pb-5 p-3">
+                                            
+                                            <br/>
+                                            <form id="userRegisterForm" autoComplete='off' onSubmit={submitUpdateFormData}>
+                                                <Stack direction="row" justifyContent="space-between">
+                                                    <div style={{paddingTop:'1%'}}>
+                                                        <b>
+                                                        Two Factor Authentication
+                                                        </b>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <Switch checked={form_data["twoFactorAuth"]} name="twoFactorAuth" onChange={updateFormData} />
+                                                    </div>
+                                                </Stack>
+                                                <br/>
+                                                <div>
+                                                    <TextField onChange={updateFormData} value={form_data.username} disabled="true" variant='outlined' label="Email" type="email" name="username" size="small" required fullWidth/>  
+                                                </div>
+                                                <br/>
+                                                <div>
+                                                    <TextField onChange={updateFormData} variant='outlined' value={form_data.name} label="Name" type="text" name="name" size="small" required fullWidth/>  
+                                                </div>
+                                                <br/>
+                                                <div>
+                                                    <TextField error={passwordValidState.state} helperText={passwordValidState.text}  onChange={updateFormData} value={form_data.password} variant='outlined' label="Password" type="password" name="password" size="small"  fullWidth/> 
+                                                </div>
+                                                <br/>
+                                                <div>
+                                                    <TextField error={passwordState.state} helperText={passwordState.text} onChange={updateFormData} variant='outlined' label="Confirm Password" type="password" name="confirm_password" size="small" fullWidth/>   
+                                                </div>
+                                                <br/>
+                                                <div>
+                                                    <TextField onChange={updateFormData} variant='outlined' label="School/College/Company" value={form_data.organisation} type="text" name="organisation" size="small" required fullWidth/>  
+                                                </div>
+                                                <br/>
+                                                <div>
+                                                    <TextField onChange={updateFormData} variant='outlined' label="Designation" type="text" value={form_data.designation} name="designation" size="small" required fullWidth/>  
+                                                </div>
+                                                <br/>
+                                                <div>
+                                                    <TextField error={mobile_state.state} helperText={mobile_state.text} onChange={updateFormData} value={form_data.mobile} onInput={checkMobile} variant='outlined' label="Mobile" type="text" name="mobile" size="small" required fullWidth/>  
+                                                </div>
+                                                <br/>
+                                                
+                                                <Stack direction="row" justifyContent="right">
+                                                    
+                                                    {
+                                                        (alertState.state)&&
+                                                        <Alert severity={alertState.type}>{alertState.message}</Alert>
+                                                    }
+                                                    &nbsp;
+                                                    <LoadingButton loading={btnLoad} type="submit" variant="contained" className="bg-main"><span>Update</span></LoadingButton>
+
+                                                </Stack>
+                                                
+                                            </form>
+                                        </div>
+                                        ||
+                                        <Stack direction="row" justifyContent="center">
+                                            <CircularProgress />
+                                        </Stack>
+                                    }
+                            </Container>
+                            
+                    </Grid>
+                </Grid>
+            </div>
             </div>
         </div>
     )

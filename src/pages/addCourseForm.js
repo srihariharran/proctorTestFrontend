@@ -31,6 +31,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { decryptData } from './functions/crypto';
+import utils from '../utils.json'
 
 // For Users Field
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -63,12 +64,12 @@ function AddCourseForm()
     }
     const updateStartTimeData = (value) => {
         // const { name } = event.target;
-        console.log(new Date(value).toISOString());
+        // console.log(new Date(value).toISOString());
         setForm_data((form_data) => ({ ...form_data, ["startTime"]: value.toISOString() }))
     }
     const updateEndTimeData = (value) => {
         // const { name } = event.target;
-        console.log(new Date(value));
+        // console.log(new Date(value));
         setForm_data((form_data) => ({ ...form_data, ["endTime"]: value.toISOString() }))
     }
     const [btnLoad,setBtnLoad] = useState(false)
@@ -80,11 +81,11 @@ function AddCourseForm()
     // Function to submit form data
     const submitData = async(event) => {
         event.preventDefault()
-        console.log(userList)
+        // console.log(userList)
         
         try 
         {
-            let res = await fetch("/api/course/addDetails",
+            let res = await fetch(utils["url"]+"/api/course/addDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -136,7 +137,7 @@ function AddCourseForm()
  
             try 
             {
-                let res = await fetch("/api/user/getDetails",
+                let res = await fetch(utils["url"]+"/api/user/getDetails",
                 {
                     crossDomain: true,
                     headers: { 

@@ -26,6 +26,8 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import EditCourseForm from './editCourseForm';
 import { decryptData } from './functions/crypto';
+import CircularProgress from '@mui/material/CircularProgress';
+import utils from '../utils.json'
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -95,7 +97,7 @@ function ContributePage()
     const getCourseDetails = async() => {
         try 
         {
-            let res = await fetch("/api/course/getDetails",
+            let res = await fetch(utils["url"]+"/api/course/getDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -108,7 +110,7 @@ function ContributePage()
             if (res.status === 200) {
                 setCourseDetails(resJson)
                 setLoginStatus(true)
-                console.log(resJson)
+                // console.log(resJson)
             }
             else
             {
@@ -128,7 +130,7 @@ function ContributePage()
         data:null
     });
     const openEditCourseModal = (data) => {
-        console.log(data)
+        // console.log(data)
         setEditCourseModalState({
             state:true,
             data:data
@@ -172,7 +174,7 @@ function ContributePage()
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/course/deleteDetails",
+            let res = await fetch(utils["url"]+"/api/course/deleteDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -216,27 +218,29 @@ function ContributePage()
 
     return(
         <div>
-            {
-                (loginStatus) &&
-                <div>
-                    {/* Courses List */}
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                            <Navbar />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Container maxWidth="lg">
-                                <Stack direction="row" justifyContent="space-between">
-                                    <h2 className='text-main'>Contribute</h2>
-                                    {
-                                        (alertState.state)&&
-                                        <Alert severity={alertState.type}>{alertState.message}</Alert>
-                                    }
-                                    <Button variant='contained' size="small" onClick={openAddCourseModal} className="bg-main text-white text-bold" sx={{margin:"5px"}}>Add Course</Button>
-                                </Stack>
+            
+            <div>
+                {/* Courses List */}
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <Navbar />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Container maxWidth="lg">
+                            <Stack direction="row" justifyContent="space-between">
+                                <h2 className='text-main'>Contribute</h2>
+                                {
+                                    (alertState.state)&&
+                                    <Alert severity={alertState.type}>{alertState.message}</Alert>
+                                }
+                                <Button variant='contained' size="small" onClick={openAddCourseModal} className="bg-main text-white text-bold" sx={{margin:"5px"}}>Add Course</Button>
+                            </Stack>
+                            
+                            <Divider />
+                            <br/>
+                            {
+                            (loginStatus) &&
                                 
-                                <Divider />
-                                <br/>
                                 <Grid container spacing={2}>
                                 {
                                     (courseDetails.length==0)?
@@ -294,6 +298,13 @@ function ContributePage()
                                                                 </Typography>          
                                                                 <Typography variant="body2" color="text.secondary">
                                                                     <small>{data.testTaken} users taken this course</small>
+                                                                </Typography>      
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                
+                                                                        <small>
+                                                                            <b>Minimum {data.noOfQuestion} questions required to publish in courses page </b>
+                                                                        </small>
+                                                                        
                                                                 </Typography>                       
                                                                 <br/>                     
                                                                 <Stack direction="row" justifyContent="center" spacing={1}>
@@ -318,72 +329,77 @@ function ContributePage()
                                     ))
                                 }
                                 </Grid>
-                            </Container>
-                        </Grid>
-                    </Grid>
-                    <br/>
-                    <Modal
-                        open={addCourseModalState}
-                        onClose={closeAddCourseModal}
-                        aria-labelledby="modal-modal-title"
-                        aria-describedby="modal-modal-description"
-                    >
-                        <Box sx={modalStyle}>
-                            <AddCourseForm />
-
-                        </Box>
-                    
-                    </Modal>
-
-                    <Modal
-                        open={editCourseModalState.state}
-                        onClose={closeEditCourseModal}
-                        aria-labelledby="modal-modal-title"
-                        aria-describedby="modal-modal-description"
-                    >
-                        <Box sx={modalStyle}>
-                            <EditCourseForm data={editCourseModalState.data} />
-
-                        </Box>
-                    
-                    </Modal>
-
-                    <Modal
-                        open={deleteCourseModalState.state}
-                        onClose={closeDeleteCourseModal}
-                        aria-labelledby="modal-modal-title"
-                        aria-describedby="modal-modal-description"
-                    >
-                        <Box sx={modalStyle}>
-                            <div style={{ fontWeight: 'bold' }}>
-                                Delete Course
-                            </div>
-                            <div>
-                                Are you sure, you want to delete this course
-                                {
-                                    (deleteCourseModalState.state)&&
-                                    <b>
-                                        ({deleteCourseModalState.data.courseName})
-                                    </b>
-                                }
-                                
-                            </div>
-                        
-                            <br/>
-                            <div style={{ textAlign: 'right', marginRight: '1%' }}>
+                                ||
                                 <Stack direction="row" justifyContent="center">
-                                    <LoadingButton onClick={(event)=>DeleteCourseData(event,{courseId:deleteCourseModalState.data.courseId})} loading={btnLoad} type="submit" variant="contained" color="success"><span>Yes</span></LoadingButton>
-                                    &nbsp;
-                                    <Button onClick={closeDeleteCourseModal} variant="contained" color="error">No</Button>
+                                    <CircularProgress />
                                 </Stack>
-                                
-                                
-                            </div>
-                        </Box>
+                            }
+                        </Container>
+                    </Grid>
+                </Grid>
+                <br/>
+                <Modal
+                    open={addCourseModalState}
+                    onClose={closeAddCourseModal}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={modalStyle}>
+                        <AddCourseForm />
+
+                    </Box>
+                
+                </Modal>
+
+                <Modal
+                    open={editCourseModalState.state}
+                    onClose={closeEditCourseModal}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={modalStyle}>
+                        <EditCourseForm data={editCourseModalState.data} />
+
+                    </Box>
+                
+                </Modal>
+
+                <Modal
+                    open={deleteCourseModalState.state}
+                    onClose={closeDeleteCourseModal}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={modalStyle}>
+                        <div style={{ fontWeight: 'bold' }}>
+                            Delete Course
+                        </div>
+                        <div>
+                            Are you sure, you want to delete this course
+                            {
+                                (deleteCourseModalState.state)&&
+                                <b>
+                                    ({deleteCourseModalState.data.courseName})
+                                </b>
+                            }
+                            
+                        </div>
                     
-                    </Modal>
-                </div>
-            }
+                        <br/>
+                        <div style={{ textAlign: 'right', marginRight: '1%' }}>
+                            <Stack direction="row" justifyContent="center">
+                                <LoadingButton onClick={(event)=>DeleteCourseData(event,{courseId:deleteCourseModalState.data.courseId})} loading={btnLoad} type="submit" variant="contained" color="success"><span>Yes</span></LoadingButton>
+                                &nbsp;
+                                <Button onClick={closeDeleteCourseModal} variant="contained" color="error">No</Button>
+                            </Stack>
+                            
+                            
+                        </div>
+                    </Box>
+                
+                </Modal>
+            </div>
+            
         </div>
     )
 }

@@ -20,6 +20,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { decryptData } from './functions/crypto';
+import utils from '../utils.json'
 
 // Edit Question Form Page Function
 function EditQuestionForm(props)
@@ -72,7 +73,7 @@ function EditQuestionForm(props)
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/question/editDetails",
+            let res = await fetch(utils["url"]+"/api/question/editDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -119,7 +120,7 @@ function EditQuestionForm(props)
         keys.forEach(key => {
             if(key.includes("option") && !optionsList.includes(key))
             {
-                console.log(keys);
+                // console.log(keys);
                 setOptionsList((option) => ([...option, key]));
                 // console.log(optionsList);
             }

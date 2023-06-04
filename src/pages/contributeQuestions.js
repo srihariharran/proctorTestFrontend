@@ -19,6 +19,8 @@ import EditQuestionForm from './editQuestionForm';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { decryptData } from './functions/crypto';
+import CircularProgress from '@mui/material/CircularProgress';
+import utils from '../utils.json'
 
 // Course Page Function, It will act as Home Page
 function ContributeQuestionsPage()
@@ -121,7 +123,7 @@ function ContributeQuestionsPage()
     const getQuestionDetails = async() => {
         try 
         {
-            let res = await fetch("/api/question/getDetails",
+            let res = await fetch(utils["url"]+"/api/question/getDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -165,7 +167,7 @@ function ContributeQuestionsPage()
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/question/deleteDetails",
+            let res = await fetch(utils["url"]+"/api/question/deleteDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -227,54 +229,63 @@ function ContributeQuestionsPage()
                         </Stack>
                         
                         <Divider />
-                        <div  className='text-center'>
-                            <small>No. of Questions {questionsDetails.length}</small>
-                        </div>
-                        
-                        <br/>
-                        <Grid container spacing={2}>
                         {
-                            questionsDetails.map((data,index)=> (
-                                <Grid key={index} item xs={12} sm={12}>
-                                    <Paper elevation={3} sx={{padding:"10px"}}>
-                                        <Stack direction="row" justifyContent="space-between">
-                                            <h6>{data.question}</h6>
-                                            {
-                                                (username==data.createdBy)&&
-                                                <div >
-                                                    <EditIcon onClick={()=>openEditQuestionModal(data)} title="Edit "  sx={{fontSize:"18px",color:"#b38f00",cursor:"pointer"}}/>
-                                                    <DeleteIcon onClick={()=>openDeleteQuestionModal(data)} title="Delete" sx={{fontSize:"18px",color:"#b30000",cursor:"pointer"}}/>
-                                                </div>
-
-                                            }
-                                        </Stack>
-                                        
-                                        <Stack direction="row" justifyContent="space-between" sx={{fontSize:"12px"}}>
-                                            <div className="text-left">
-                                                Created: {new Date(data.createdOn).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}
-                                                {
-                                                    (data.lastUpdated)&&
-                                                    <div>
-                                                        Last updated: {new Date(data.lastUpdated).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}
-                                                    </div>
-                                                }
-                                                
-                                            </div>
-                                            <Stack direction="row" justifyContent="space-between">
-                                                <div className="text-right">
-                                                    Credits: {data.createdBy}
-                                                </div>
-                                                
-                                            </Stack>
-                                            
-                                        </Stack>
-                                        
-                                    </Paper>
-                                </Grid>
+                        (loginStatus) &&
+                            <div>
+                                <div  className='text-center'>
+                                    <small>No. of Questions {questionsDetails.length}</small>
+                                </div>
                                 
-                            ))
-                        }
-                        </Grid>
+                                <br/>
+                                <Grid container spacing={2}>
+                                {
+                                    questionsDetails.map((data,index)=> (
+                                        <Grid key={index} item xs={12} sm={12}>
+                                            <Paper elevation={3} sx={{padding:"10px"}}>
+                                                <Stack direction="row" justifyContent="space-between">
+                                                    <h6>{data.question}</h6>
+                                                    {
+                                                        (username==data.createdBy)&&
+                                                        <div >
+                                                            <EditIcon onClick={()=>openEditQuestionModal(data)} title="Edit "  sx={{fontSize:"18px",color:"#b38f00",cursor:"pointer"}}/>
+                                                            <DeleteIcon onClick={()=>openDeleteQuestionModal(data)} title="Delete" sx={{fontSize:"18px",color:"#b30000",cursor:"pointer"}}/>
+                                                        </div>
+
+                                                    }
+                                                </Stack>
+                                                
+                                                <Stack direction="row" justifyContent="space-between" sx={{fontSize:"12px"}}>
+                                                    <div className="text-left">
+                                                        Created: {new Date(data.createdOn).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}
+                                                        {
+                                                            (data.lastUpdated)&&
+                                                            <div>
+                                                                Last updated: {new Date(data.lastUpdated).toLocaleString('en-US',{hour12:true,dateStyle:"long",timeStyle:"long"})}
+                                                            </div>
+                                                        }
+                                                        
+                                                    </div>
+                                                    <Stack direction="row" justifyContent="space-between">
+                                                        <div className="text-right">
+                                                            Credits: {data.createdBy}
+                                                        </div>
+                                                        
+                                                    </Stack>
+                                                    
+                                                </Stack>
+                                                
+                                            </Paper>
+                                        </Grid>
+                                        
+                                    ))
+                                }
+                                </Grid>
+                            </div>
+                        ||
+                        <Stack direction="row" justifyContent="center">
+                            <CircularProgress />
+                        </Stack>
+                    }
                         
                         
                     </Container>

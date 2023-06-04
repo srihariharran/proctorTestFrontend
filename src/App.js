@@ -16,6 +16,7 @@ import ContributeTestReportPage from './pages/contributeTestReport';
 import ProfilePage from './pages/profile';
 import TwoFactorAuthPage from './pages/twoFactorAuth';
 import ResetPasswordPage from './pages/resetPassword';
+import utils from './utils.json'
 
 // App Function
 function App() {
@@ -24,7 +25,7 @@ function App() {
     (async () => {
 
       try{
-        let res = await fetch('/connect',
+        let res = await fetch(utils["url"]+'/connect',
         {
             crossDomain: true,
             headers: { 'Content-Type': 'application/json' },
@@ -32,7 +33,7 @@ function App() {
         });
         let resJson = await res.json();
         if (!res.status === 200) {
-          console.log("Connection Failed")
+          // console.log("Connection Failed")
         }
       }
       catch (err) {

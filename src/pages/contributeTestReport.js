@@ -30,7 +30,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CircularProgressWithLabel from './components/CircularProgressWithLabel';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
-
+import CircularProgress from '@mui/material/CircularProgress';
+import utils from '../utils.json'
 
 
 // Test Report Function
@@ -72,14 +73,14 @@ function ContributeTestReportPage()
     const [loginStatus,setLoginStatus] = useState(false)
     useEffect(()=>{
         (async () => {
-            console.log(data)
+            // console.log(data)
             // Checking Login Status
             if(localStorage.getItem("utils"))
             {
                 
                 try 
                 {
-                    let res = await fetch("/api/test/report/getDetails",
+                    let res = await fetch(utils["url"]+"/api/test/report/getDetails",
                     {
                         crossDomain: true,
                         headers: { 
@@ -91,7 +92,7 @@ function ContributeTestReportPage()
                     });
                     let resJson = await res.json();
                     if (res.status === 200) {
-                        console.log(resJson)
+                        // console.log(resJson)
                         setReportDetails(resJson)
                         setLoginStatus(true)
                     }
@@ -176,21 +177,23 @@ function ContributeTestReportPage()
     const [username,setUsername] = useState(decryptData(localStorage.getItem("utils"))["username"])
     return(
         <div>
-            {
-                (loginStatus) &&
-                <div>
-                    {/* Courses List */}
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                            <Navbar />
-                        </Grid>
-                    
-                        <Grid item xs={12}>
-                            <Container maxWidth="lg">
-                                <div style={{width:"100%"}}>
-                                    <h2 className="text-center">{data.courseName} Test Report Details</h2>
-                                </div>
-                                <Divider />
+            
+            <div>
+                {/* Courses List */}
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <Navbar />
+                    </Grid>
+                
+                    <Grid item xs={12}>
+                        <Container maxWidth="lg">
+                            <div style={{width:"100%"}}>
+                                <h2 className="text-center">{data.courseName} Test Report Details</h2>
+                            </div>
+                            <Divider />
+                            {
+                            (loginStatus) &&
+                            <div>
                                 <br/>
                                 <div>
                                     <h5>
@@ -328,12 +331,18 @@ function ContributeTestReportPage()
                                     </Grid>
 
                                 </Grid>
-                            </Container>
-                        </Grid>
+                            </div>
+                            ||
+                            <Stack direction="row" justifyContent="center">
+                                <CircularProgress />
+                            </Stack>
+                        }
+                        </Container>
                     </Grid>
-                    
-                </div>
-            }
+                </Grid>
+                
+            </div>
+            
             
             
         </div>

@@ -12,7 +12,9 @@ import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { useEffect } from 'react';
+import Countdown,{zeroPad} from "react-countdown";
 import { encryptData } from './functions/crypto';
+import utils from '../utils.json'
 
 // TwoFactorAuth Page Function
 function TwoFactorAuthPage()
@@ -46,7 +48,7 @@ function TwoFactorAuthPage()
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/twoFactorAuth",
+            let res = await fetch(utils["url"]+"/api/twoFactorAuth",
             {
                 crossDomain: true,
                 headers: { 'Content-Type': 'application/json' },
@@ -85,13 +87,14 @@ function TwoFactorAuthPage()
             console.log(err);
         }
     }
-
+    const [btnState,setBtnState] = useState(true)
+    const [currentDate,setCurrentDate] = useState(Date.now()+ (60000*5))
     // Function to Resend OTP
     const resendOTP = async(event) => {
         event.preventDefault()
         try 
         {
-            let res = await fetch("/api/resendOTP",
+            let res = await fetch(utils["url"]+"/api/resendOTP",
             {
                 crossDomain: true,
                 headers: { 'Content-Type': 'application/json' },
@@ -149,6 +152,18 @@ function TwoFactorAuthPage()
         }
     },[])
 
+    // Renderer callback with condition for resend OTP Countdown
+    const renderer = ({ hours, minutes, seconds, completed }) => {
+        // console.log(completed)
+        if (completed) {
+        // Render a completed state
+            return <span>Resend OTP</span>;
+        } else {
+        // Render a countdown
+            return <span>Resend OTP {zeroPad(minutes)}:{zeroPad(seconds)}</span>;
+        }
+    };
+
     return(
         <div>
             {/* Login Box */}
@@ -186,7 +201,9 @@ function TwoFactorAuthPage()
                                             <br/>
                                             
                                             <Stack direction="row" justifyContent="space-between">
-                                                <Button variant='outlined' type="button" onClick={resendOTP}>Resend OTP</Button>
+                                                <Button variant='outlined' type="button" disabled={btnState} onClick={resendOTP}>
+                                                    <Countdown date={currentDate} renderer={renderer} onComplete={()=>{setBtnState(false)}}/>
+                                                </Button>
                                                 {
                                                     (alertState.state)&&
                                                     <Alert severity={alertState.type}>{alertState.message}</Alert>

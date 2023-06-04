@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { useEffect } from 'react';
+import utils from '../utils.json'
 
 // New User Page Function
 function NewUserPage()
@@ -20,10 +21,58 @@ function NewUserPage()
         navigate(path, { replace: true })
     }
     const [form_data,setForm_data] = useState({})
+    const [passwordValidState,setPasswordValidState] = useState({
+        state:false,
+        text:''
+    })
+    const [username_state, setUsername_state] = useState({ text: '', state: false })
+    const [mobile_state, setMobile_state] = useState({ text: '', state: false })
     // Function to update user details
     const updateFormData = (event) => {
         const {name,value} = event.target
         setForm_data((form_data) => ({ ...form_data, [name]: value }))
+        
+        
+        if(name=="password")
+        {
+            const reg =/^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+            
+            if(!reg.test(value))
+            {
+                setPasswordValidState({
+                    state:true,
+                    text:"Must contain at least 1 number and 1 uppercase and lowercase letter, and at least 8 or more characters"
+                })
+            }
+            else
+            {
+                setPasswordValidState({
+                    state:false,
+                    text:""
+                })
+            }
+            
+        }
+        if(name=="mobile")
+        {
+            const reg =/^(\+|\d)[0-9]{7,16}$/;;
+            
+            if(!reg.test(value))
+            {
+                setMobile_state({
+                    state:true,
+                    text:"Invalid Mobile No."
+                })
+            }
+            else
+            {
+                setMobile_state({
+                    state:false,
+                    text:""
+                })
+            }
+            
+        }
     }
     const [btnLoad,setBtnLoad] = useState(false)
     const [alertState,setAlertState] = useState({
@@ -33,13 +82,18 @@ function NewUserPage()
     })
     // Function to register user
     const submitNewUserFormData = async(event) => {
+        
         event.preventDefault()
-        if(!username_state.state && !mobile_state.state && !passwordState.state)
+        setBtnLoad(true)
+        await checkUsername()
+        await checkMobile()
+        
+        if(!username_state.state && !mobile_state.state && !passwordState.state && !passwordValidState.state)
         {
-            setBtnLoad(true)
+            
             try 
             {
-                let res = await fetch("/api/register/user",
+                let res = await fetch(utils["url"]+"/api/register/user",
                 {
                     crossDomain: true,
                     headers: { 'Content-Type': 'application/json' },
@@ -76,22 +130,25 @@ function NewUserPage()
                 console.log(err);
             }
         }
+        else
+        {
+            setBtnLoad(false)
+        }
     }
-    const [username_state, setUsername_state] = useState({ text: '', state: false })
-    const [mobile_state, setMobile_state] = useState({ text: '', state: false })
+    
     // Function to check username exists
     const checkUsername = async(event) => {
-        event.preventDefault()
+        
         // API Call to Check Username
         try 
         {
-          let res = await fetch("/api/checkUsernameExists",
+          let res = await fetch(utils["url"]+"/api/checkUsernameExists",
             {
               crossDomain: true,
               headers: { 'Content-Type': 'application/json' },
               method: "POST",
               body: JSON.stringify({
-                username: event.target.value
+                username: form_data.username
               })
             });
           let resJson = await res.json();
@@ -113,18 +170,18 @@ function NewUserPage()
     
     // Function to Check Mobile
     const checkMobile = async(event) => {
-        event.preventDefault()
+        
         
         // API Call to Check Mobile
         try 
         {
-          let res = await fetch("/api/checkMobileNoExists",
+          let res = await fetch(utils["url"]+"/api/checkMobileNoExists",
             {
               crossDomain: true,
               headers: { 'Content-Type': 'application/json' },
               method: "POST",
               body: JSON.stringify({
-                mobile: event.target.value
+                mobile: form_data.mobile
               })
             });
           let resJson = await res.json();
@@ -188,7 +245,7 @@ function NewUserPage()
                                         <br/>
                                         <form id="userRegisterForm" autoComplete='off' onSubmit={submitNewUserFormData}>
                                             <div>
-                                                <TextField error={username_state.state} helperText={username_state.text} onChange={updateFormData} onInput={checkUsername} variant='outlined' label="Email" type="email" name="username" size="small" required fullWidth/>  
+                                                <TextField error={username_state.state} helperText={username_state.text} onChange={updateFormData}  variant='outlined' label="Email" type="email" name="username" size="small" required fullWidth/>  
                                             </div>
                                             <br/>
                                             <div>
@@ -196,7 +253,7 @@ function NewUserPage()
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField error={passwordState.state}  onChange={updateFormData} variant='outlined' label="Password" type="password" name="password" size="small" required fullWidth/> 
+                                                <TextField error={passwordValidState.state} helperText={passwordValidState.text}  onChange={updateFormData} variant='outlined' label="Password" type="password" name="password" size="small" required fullWidth/> 
                                             </div>
                                             <br/>
                                             <div>
@@ -212,7 +269,7 @@ function NewUserPage()
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField error={mobile_state.state} helperText={mobile_state.text} onChange={updateFormData} onInput={checkMobile} variant='outlined' label="Mobile" type="text" name="mobile" size="small" required fullWidth/>  
+                                                <TextField error={mobile_state.state} helperText={mobile_state.text} onChange={updateFormData}  variant='outlined' label="Mobile" type="text" name="mobile" size="small" required fullWidth/>  
                                             </div>
                                             <br/>
                                             

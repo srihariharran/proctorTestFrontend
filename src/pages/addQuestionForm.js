@@ -20,6 +20,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { decryptData } from './functions/crypto';
+import utils from '../utils.json'
 
 // Add Question Form Page Function
 function AddQuestionForm(props)
@@ -70,7 +71,7 @@ function AddQuestionForm(props)
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/question/addDetails",
+            let res = await fetch(utils["url"]+"/api/question/addDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -117,7 +118,7 @@ function AddQuestionForm(props)
         keys.forEach(key => {
             if(key.includes("option") && !optionsList.includes(key))
             {
-                console.log(keys);
+                // console.log(keys);
                 setOptionsList((option) => ([...option, key]));
                 // console.log(optionsList);
             }

@@ -13,6 +13,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { useEffect } from 'react';
 import { encryptData } from './functions/crypto';
+import utils from '../utils.json'
 
 // Login Page Function
 function LoginPage()
@@ -40,7 +41,7 @@ function LoginPage()
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/login",
+            let res = await fetch(utils["url"]+"/api/login",
             {
                 crossDomain: true,
                 headers: { 'Content-Type': 'application/json' },

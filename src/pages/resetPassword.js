@@ -12,7 +12,9 @@ import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { useEffect } from 'react';
-import { encryptData } from './functions/crypto';
+import Countdown,{zeroPad} from "react-countdown";
+import utils from '../utils.json'
+
 
 // ResetPassword Page Function
 function ResetPasswordPage()
@@ -29,10 +31,34 @@ function ResetPasswordPage()
 
 
     const [form_data,setForm_data] = useState({})
+    const [passwordValidState,setPasswordValidState] = useState({
+        state:false,
+        text:''
+    })
     // Function to update user details
     const updateFormData = (event) => {
         const {name,value} = event.target
         setForm_data((form_data) => ({ ...form_data, [name]: value }))
+        if(name=="password")
+        {
+            const reg =/^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+            
+            if(!reg.test(value))
+            {
+                setPasswordValidState({
+                    state:true,
+                    text:"Must contain at least 1 number and 1 uppercase and lowercase letter, and at least 8 or more characters"
+                })
+            }
+            else
+            {
+                setPasswordValidState({
+                    state:false,
+                    text:""
+                })
+            }
+            
+        }
     }
     const [btnLoad,setBtnLoad] = useState(false)
     const [alertState,setAlertState] = useState({
@@ -65,51 +91,58 @@ function ResetPasswordPage()
     const submitLoginFormData = async(event) => {
         event.preventDefault()
         setBtnLoad(true)
-        try 
+        if(!passwordState.state && !passwordValidState.state)
         {
-            let res = await fetch("/api/resetPassword",
+            try 
             {
-                crossDomain: true,
-                headers: { 'Content-Type': 'application/json' },
-                method: "POST",
-                body: JSON.stringify(form_data)
-            });
-            let resJson = await res.json();
-            if (res.status === 200) {
-                setAlertState({
-                    state:true,
-                    message:resJson["message"]
-                })
-                if(resJson['status'])
+                let res = await fetch(utils["url"]+"/api/resetPassword",
                 {
-                   
-                    setAlertState((alert)=>({...alert,["type"]:"success"}))
-                }
-                else
-                {
-                    document.getElementById("form").reset();
-                    setBtnLoad(false)
-                    setAlertState((alert)=>({...alert,["type"]:"error"}))
-                }
-                setTimeout(()=>{
-                    handleRoutes('/')
+                    crossDomain: true,
+                    headers: { 'Content-Type': 'application/json' },
+                    method: "POST",
+                    body: JSON.stringify(form_data)
+                });
+                let resJson = await res.json();
+                if (res.status === 200) {
                     setAlertState({
-                        state:false,
-                        type:"",
-                        message:""
+                        state:true,
+                        message:resJson["message"]
                     })
-                },5000)
+                    if(resJson['status'])
+                    {
+                    
+                        setAlertState((alert)=>({...alert,["type"]:"success"}))
+                    }
+                    else
+                    {
+                        document.getElementById("form").reset();
+                        setBtnLoad(false)
+                        setAlertState((alert)=>({...alert,["type"]:"error"}))
+                    }
+                    setTimeout(()=>{
+                        handleRoutes('/')
+                        setAlertState({
+                            state:false,
+                            type:"",
+                            message:""
+                        })
+                    },5000)
+                }
+            }
+            catch (err) {
+                console.log(err);
             }
         }
-        catch (err) {
-            console.log(err);
-        }
+        
+        
     }
+    const [btnState,setBtnState] = useState(true)
+    const [currentDate,setCurrentDate] = useState(Date.now()+ (60000*5))
     const resendOTP = async(event) => {
         event.preventDefault()
         try 
         {
-            let res = await fetch("/api/resendOTP",
+            let res = await fetch(utils["url"]+"/api/resendOTP",
             {
                 crossDomain: true,
                 headers: { 'Content-Type': 'application/json' },
@@ -126,7 +159,7 @@ function ResetPasswordPage()
                 })
                 if(resJson['status'])
                 {
-                   
+                    
                     setAlertState((alert)=>({...alert,["type"]:"success"}))
                 }
                 else
@@ -164,8 +197,21 @@ function ResetPasswordPage()
             }
         }
     },[])
+    
 
+    // Renderer callback with condition for resend OTP Countdown
+    const renderer = ({ hours, minutes, seconds, completed }) => {
+        // console.log(completed)
+        if (completed) {
+        // Render a completed state
+            return <span>Resend OTP</span>;
+        } else {
+        // Render a countdown
+            return <span>Resend OTP {zeroPad(minutes)}:{zeroPad(seconds)}</span>;
+        }
+    };
     return(
+
         <div>
             {/* Login Box */}
            <div className="login-box-container">
@@ -184,11 +230,9 @@ function ResetPasswordPage()
                                     {/* Login Form */}
                                     <div className="pt-3 pb-5 p-3">
                                         <h4 className="text-center text-main ">
-                                            <strong>Two Factor Authentication</strong>
+                                            <strong>Reset Password</strong>
                                         </h4>
-                                        <h5 className="text-center text-main ">
-                                            <strong>OTP Verification</strong>
-                                        </h5>
+                                      
                                         <p className="text-center">
                                            <small>OTP sent to your Email {form_data.maskedEmail}</small>
                                         </p>
@@ -200,16 +244,18 @@ function ResetPasswordPage()
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField error={passwordState.state}  onChange={updateFormData} variant='outlined' label="Password" type="password" name="password" size="small" required fullWidth/> 
+                                                <TextField error={passwordValidState.state} helperText={passwordValidState.text} onChange={updateFormData} variant='outlined' label="New Password" type="password" name="password" size="small" required fullWidth/> 
                                             </div>
                                             <br/>
                                             <div>
-                                                <TextField error={passwordState.state} helperText={passwordState.text} onChange={updateFormData} variant='outlined' label="Confirm Password" type="password" name="confirm_password" size="small" required fullWidth/>   
+                                                <TextField error={passwordState.state} helperText={passwordState.text} onChange={updateFormData} variant='outlined' label="Confirm New Password" type="password" name="confirm_password" size="small" required fullWidth/>   
                                             </div>
                                             <br/>
                                             
                                             <Stack direction="row" justifyContent="space-between">
-                                                <Button variant='outlined' type="button" onClick={resendOTP}>Resend OTP</Button>
+                                                <Button variant='outlined' type="button" disabled={btnState} onClick={resendOTP}>
+                                                    <Countdown date={currentDate} renderer={renderer} onComplete={()=>{setBtnState(false)}}/>
+                                                </Button>
                                                 {
                                                     (alertState.state)&&
                                                     <Alert severity={alertState.type}>{alertState.message}</Alert>

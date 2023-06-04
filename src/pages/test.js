@@ -37,6 +37,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import { decryptData } from './functions/crypto';
+import utils from '../utils.json'
 
 
 // Test Page Function
@@ -283,7 +284,7 @@ function TestPage()
         setBtnLoad(true)
         try 
         {
-            let res = await fetch("/api/test/submitDetails",
+            let res = await fetch(utils["url"]+"/api/test/submitDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -295,7 +296,7 @@ function TestPage()
             });
             let resJson = await res.json();
             if (res.status === 200) {
-                console.log(resJson)
+                // console.log(resJson)
                 setAlertState({
                     state:true,
                     message:resJson["message"]
@@ -363,6 +364,7 @@ function TestPage()
     }
     // Function to start test
     const startTest = () => {
+        
         fullScreen();
         setStartTestModalState(false);
         if(courseDetails['webcam']=="yes")
@@ -390,7 +392,7 @@ function TestPage()
         // console.log("Start")
         try     
         {
-            let res = await fetch("/api/checkFace",
+            let res = await fetch(utils["url"]+"/api/checkFace",
             {
                 crossDomain: true,
                 headers: { 
@@ -450,7 +452,7 @@ function TestPage()
             {
                 try 
                 {
-                    let res = await fetch("/api/test/getDetails",
+                    let res = await fetch(utils["url"]+"/api/test/getDetails",
                     {
                         crossDomain: true,
                         headers: { 
@@ -653,31 +655,7 @@ function TestPage()
                         </Toolbar>
                     </AppBar>
                     <br/>
-                    <Modal
-                        open={startTestModalState}
-                        aria-labelledby="modal-modal-title"
-                        aria-describedby="modal-modal-description"
-                        sx={{backgroundColor:'rgba(0,0,0,0.95)'}}
-                    >
-                        <Box sx={modalStyle}>
-                            <h1>All the Best. Do Well</h1>
-                            <b>Note: </b> 
-                            <ol>
-                                <li>Timer already started</li>
-                                <li>Don't exit fullscreen. In case you exit the test will submitted automatically and consider this as malpractice.</li>
-                            </ol>
-                            <br/>
-                            <br/>
-                            <Stack direction="row" justifyContent="center">
-                                <Button variant='contained' onClick={startTest} color="success">
-                                    Start
-                                </Button>
-                            </Stack>
-                            
-
-                        </Box>
                     
-                    </Modal>
                     <Modal
                         open={endTestModalState}
                         onClose={closeEndTestModal}
@@ -758,7 +736,31 @@ function TestPage()
                     </Modal>
                 </div>
             }
+            <Modal
+                open={startTestModalState}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+                sx={{backgroundColor:'rgba(0,0,0,0.95)'}}
+            >
+                <Box sx={modalStyle}>
+                    <h1>All the Best. Do Well</h1>
+                    <b>Note: </b> 
+                    <ol>
+                        <li>Timer already started</li>
+                        <li>Don't exit fullscreen. In case you exit the test will submitted automatically and consider this as malpractice.</li>
+                    </ol>
+                    <br/>
+                    <br/>
+                    <Stack direction="row" justifyContent="center">
+                        <Button variant='contained' onClick={startTest} disabled={!loginStatus} color="success">
+                            Start
+                        </Button>
+                    </Stack>
+                    
+
+                </Box>
             
+            </Modal>
         </div>
     )
 }

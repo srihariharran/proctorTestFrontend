@@ -15,8 +15,9 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
 import { decryptData } from './functions/crypto';
-import { Button } from '@mui/material';
-
+import { Button,Stack } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import utils from '../utils.json'
 
 // Test Report Function
 function TestReportDetailsPage()
@@ -63,7 +64,7 @@ function TestReportDetailsPage()
                 
                 try 
                 {
-                    let res = await fetch("/api/test/report/all/getDetails",
+                    let res = await fetch(utils["url"]+"/api/test/report/all/getDetails",
                     {
                         crossDomain: true,
                         headers: { 
@@ -75,7 +76,7 @@ function TestReportDetailsPage()
                     });
                     let resJson = await res.json();
                     if (res.status === 200) {
-                        console.log(resJson)
+                        // console.log(resJson)
                         setReportDetails(resJson)
                         setLoginStatus(true)
                     }
@@ -106,22 +107,23 @@ function TestReportDetailsPage()
     const [username,setUsername] = useState(decryptData(localStorage.getItem("utils"))["username"])
     return(
         <div>
-            {
-                (loginStatus) &&
-                <div>
-                    {/* Courses List */}
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                            <Navbar />
-                        </Grid>
-                    
-                        <Grid item xs={12}>
-                            <Container maxWidth="lg">
-                                <div style={{width:"100%"}}>
-                                    <h2 className="text-center">{cdata.courseName} Test Report Details</h2>
-                                </div>
-                                <Divider />
-                                <br/>
+            
+            <div>
+                {/* Courses List */}
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <Navbar />
+                    </Grid>
+                
+                    <Grid item xs={12}>
+                        <Container maxWidth="lg">
+                            <div style={{width:"100%"}}>
+                                <h2 className="text-center">{cdata.courseName} Test Report Details</h2>
+                            </div>
+                            <Divider />
+                            <br/>
+                            {
+                            (loginStatus) &&
                                 
                                 <Grid container spacing={2}>
                                 {
@@ -174,12 +176,17 @@ function TestReportDetailsPage()
                                                 
                                 }
                                 </Grid>
-                            </Container>
-                        </Grid>
+                                ||
+                                <Stack direction="row" justifyContent="center">
+                                    <CircularProgress />
+                                </Stack>
+                            }
+                        </Container>
                     </Grid>
-                    
-                </div>
-            }
+                </Grid>
+                
+            </div>
+            
             
             
         </div>

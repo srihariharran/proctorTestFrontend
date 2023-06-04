@@ -16,6 +16,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import { decryptData } from './functions/crypto';
+import utils from '../utils.json'
 
 
 // Take Test Settings Page Function
@@ -84,7 +85,7 @@ function TakeTestSettings(props)
     const startTest = async() => {
         try 
         {
-            let res = await fetch("/api/test/startDetails",
+            let res = await fetch(utils["url"]+"/api/test/startDetails",
             {
                 crossDomain: true,
                 headers: { 
@@ -240,7 +241,7 @@ function TakeTestSettings(props)
         
     },[])
     useEffect(()=>{
-        console.log(form_data)
+        // console.log(form_data)
        
     },[form_data])
     return(

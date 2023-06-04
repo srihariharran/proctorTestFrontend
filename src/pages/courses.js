@@ -18,6 +18,8 @@ import Box from '@mui/material/Box';
 import TakeTestSettings from './takeTestSettings';
 import CourseImg from './static/images/course.jpg';
 import { decryptData } from './functions/crypto';
+import CircularProgress from '@mui/material/CircularProgress';
+import utils from '../utils.json'
 
 
 // Course Page Function, It will act as Home Page
@@ -89,7 +91,7 @@ function CoursePage()
                 
                 try 
                 {
-                    let res = await fetch("/api/course/getDetails",
+                    let res = await fetch(utils["url"]+"/api/course/getDetails",
                     {
                         crossDomain: true,
                         headers: { 
@@ -100,7 +102,7 @@ function CoursePage()
                     });
                     let resJson = await res.json();
                     if (res.status === 200) {
-                        console.log(resJson)
+                        // console.log(resJson)
                         setCourseDetails(resJson)
                         setLoginStatus(true)
                     }
@@ -131,23 +133,23 @@ function CoursePage()
     const [username,setUsername] = useState(decryptData(localStorage.getItem("utils"))["username"])
     return(
         <div>
-            {
-                (loginStatus) &&
-                <div>
-                    {/* Courses List */}
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                            <Navbar />
-                        </Grid>
-                    
-                        <Grid item xs={12}>
-                            <Container maxWidth="lg">
-                                <div style={{width:"100%"}}>
-                                    <h2 className="text-left">Courses</h2>
-                                </div>
-                                <Divider />
-                                <br/>
-                                
+            
+            <div>
+                {/* Courses List */}
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <Navbar />
+                    </Grid>
+                
+                    <Grid item xs={12}>
+                        <Container maxWidth="lg">
+                            <div style={{width:"100%"}}>
+                                <h2 className="text-left">Courses</h2>
+                            </div>
+                            <Divider />
+                            <br/>
+                            {
+                            (loginStatus) &&
                                 <Grid container spacing={2}>
                                 {
                                      (courseDetails.length==0)?
@@ -243,28 +245,30 @@ function CoursePage()
                                     ))
                                 }
                                 </Grid>
-                            </Container>
-                        </Grid>
+                                ||
+                                <Stack direction="row" justifyContent="center">
+                                    <CircularProgress />
+                                </Stack>
+                            }
+                        </Container>
                     </Grid>
-                    <br/>
-                    <Modal
-                        open={takeTestModalState.state}
-                        onClose={closeTakeTestModal}
-                        aria-labelledby="modal-modal-title"
-                        aria-describedby="modal-modal-description"
-                    >
-                        <Box sx={modalStyle}>
-                            <TakeTestSettings data={takeTestModalState.data}
+                </Grid>
+                <br/>
+                <Modal
+                    open={takeTestModalState.state}
+                    onClose={closeTakeTestModal}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={modalStyle}>
+                        <TakeTestSettings data={takeTestModalState.data}
 
-                            />
+                        />
 
-                        </Box>
-                    
-                    </Modal>
-                </div>
-            }
-            
-            
+                    </Box>
+                
+                </Modal>
+            </div>
         </div>
     )
 }

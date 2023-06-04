@@ -22,6 +22,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Logo from '../static/images/logo-full.png'
 import { decryptData } from '../functions/crypto';
+import utils from '../../utils.json'
 
 const drawerWidth = 240;
 const navItems = ["courses","contribute"];
@@ -55,7 +56,7 @@ function Navbar()
     };
     const logout = async() => {
         try{
-            let res = await fetch('/api/logout',
+            let res = await fetch(utils["url"]+'/api/logout',
             {
                 crossDomain: true,
                 headers: { 
@@ -74,7 +75,7 @@ function Navbar()
                 }
                 else
                 {
-                    console.log(resJson)
+                    // console.log(resJson)
                 }
             }
         }
