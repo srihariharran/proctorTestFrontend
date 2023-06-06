@@ -17,6 +17,8 @@ import ProfilePage from './pages/profile';
 import TwoFactorAuthPage from './pages/twoFactorAuth';
 import ResetPasswordPage from './pages/resetPassword';
 import utils from './utils.json'
+import HomePage from './pages/home';
+import UserRegisterAuthPage from './pages/userRegisterAuth';
 
 // App Function
 function App() {
@@ -24,21 +26,21 @@ function App() {
   useEffect(()=>{
     (async () => {
 
-      try{
-        let res = await fetch(utils["url"]+'/connect',
-        {
-            crossDomain: true,
-            headers: { 'Content-Type': 'application/json' },
-            method: "POST"
-        });
-        let resJson = await res.json();
-        if (!res.status === 200) {
-          // console.log("Connection Failed")
-        }
-      }
-      catch (err) {
-          console.log(err);
-      }
+      // try{
+      //   let res = await fetch(utils["url"]+'/connect',
+      //   {
+      //       crossDomain: true,
+      //       headers: { 'Content-Type': 'application/json' },
+      //       method: "POST"
+      //   });
+      //   let resJson = await res.json();
+      //   if (!res.status === 200) {
+          
+      //   }
+      // }
+      // catch (err) {
+      //     console.log(err);
+      // }
   
     })();
     
@@ -48,8 +50,10 @@ function App() {
     // Routes for the application
     <BrowserRouter>
         <Routes>
-            <Route exact path="/" element={<LoginPage />} />
+            <Route exact path="/" element={<HomePage />} />
+            <Route exact path="/login" element={<LoginPage />} />
             <Route exact path="/two-factor-authentication" element={<TwoFactorAuthPage />} />
+            <Route exact path="/user-registration-authentication" element={<UserRegisterAuthPage />} />
             <Route exact path="/profile" element={<ProfilePage />} />
             <Route exact path="/user-registration" element={<NewUserPage />} />
             <Route exact path="/forgot-password" element={<ForgotPasswordPage />} />
