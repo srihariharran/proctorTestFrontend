@@ -105,6 +105,7 @@ function CoursePage()
                         // console.log(resJson)
                         setCourseDetails(resJson)
                         setLoginStatus(true)
+                        
                     }
                     else
                     {
@@ -152,7 +153,7 @@ function CoursePage()
                             (loginStatus) &&
                                 <Grid container spacing={2}>
                                 {
-                                     (courseDetails.length==0)?
+                                     (courseDetails.length==0 || !JSON.stringify(courseDetails).includes("False"))?
                                         
                                         <Container className='text-center'>Courses not available</Container>
                                     :
@@ -232,6 +233,7 @@ function CoursePage()
                                                                             <Button variant='outlined' size="small" type="button" onClick={()=>handleRoutes('/test/report',{state:{"courseId":data.courseId,"coursename":data.courseName,"reportId":data.reportId}})}>Report</Button>
                                                                         
                                                                     :
+                                                                        (data.testTaken!=0)&&
                                                                         <Button variant='outlined' size="small" type="button" onClick={()=>handleRoutes('/test/report/details',{state:{courseId:data.courseId,courseName:data.courseName}})}>Report</Button>
                                                                 }
                                                             </Stack>
@@ -240,6 +242,7 @@ function CoursePage()
                                                             
                                                     </Card>
                                                 </Grid>
+                                            
                                         }
                                         </React.Fragment>
                                     ))

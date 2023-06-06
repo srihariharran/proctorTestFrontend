@@ -366,6 +366,8 @@ function TestPage()
     const startTest = () => {
         
         fullScreen();
+        $('.questions').hide();
+        $('#question0').show();
         setStartTestModalState(false);
         if(courseDetails['webcam']=="yes")
         {
@@ -466,8 +468,7 @@ function TestPage()
                     if (res.status === 200) {
                         setCourseDetails(resJson)
                         setLoginStatus(true)
-                        $('.questions').hide();
-                        $('#question0').show();
+                        
                         
                         
                     }

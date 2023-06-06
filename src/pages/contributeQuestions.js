@@ -53,6 +53,7 @@ function ContributeQuestionsPage()
     }
     const closeAddQuestionModal = () => {
         setAddQuestionModalState(false);
+        setLoginStatus(false)
         getQuestionDetails()
     }
 
@@ -71,6 +72,7 @@ function ContributeQuestionsPage()
             state:false,
             data:null
         });
+        setLoginStatus(false)
         getQuestionDetails()
     }
 
@@ -89,6 +91,7 @@ function ContributeQuestionsPage()
             state:false,
             data:null
         });
+        setLoginStatus(false)
         getQuestionDetails()
     }
 

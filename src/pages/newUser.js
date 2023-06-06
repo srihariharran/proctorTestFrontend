@@ -93,7 +93,7 @@ function NewUserPage()
             
             try 
             {
-                let res = await fetch(utils["url"]+"/api/register/user",
+                let res = await fetch(utils["url"]+"/api/userRegisterAuth",
                 {
                     crossDomain: true,
                     headers: { 'Content-Type': 'application/json' },
@@ -107,6 +107,7 @@ function NewUserPage()
                     if(resJson['status'])
                     {
                         setAlertState((alert)=>({...alert,["type"]:"success"}))
+                        navigate('/user-registration-authentication',{state:{username:form_data['username'],maskedEmail:resJson['otpMaskedEmail']},replace:true})
                     }
                     else
                     {

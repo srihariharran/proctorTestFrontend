@@ -64,6 +64,7 @@ function ContributePage()
     }
     const closeAddCourseModal = () => {
         setAddCourseModalState(false);
+        setLoginStatus(false)
         getCourseDetails()
     }
     // State variable for Course Details
@@ -141,6 +142,7 @@ function ContributePage()
             state:false,
             data:null
         });
+        setLoginStatus(false)
         getCourseDetails()
     }
 
@@ -159,6 +161,7 @@ function ContributePage()
             state:false,
             data:null
         });
+        setLoginStatus(false)
         getCourseDetails()
     }
 
